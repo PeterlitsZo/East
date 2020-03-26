@@ -58,6 +58,7 @@ func Aim_Parser(s string) ([]aim, string){
             continue
         }
         if tok.name == "STR" {
+            tok.value = tok.value[1:len(tok.value)-1]
             if and_flag {
                 if not_flag {
                     result = append(result, aim{aim: false, value: tok.value})
