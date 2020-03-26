@@ -110,24 +110,31 @@ func main() {
     // if is without '--mkindex' or with '--useindex'
     if !*mkindex || *useindex {
         result := DocList{}
-        for _, aim := range com{
+        ok_list := []string{}
+        notok_list := []string{}
+        for _, aim := range com {
             docli, ok := WordMap[aim.value]
-            if !ok {
-                // can match any thing
-                continue
-            }
+            // can't match any thing
+            if !ok { continue; }
+
             curre := docli.start
             if aim.aim == true{
                 for curre != nil {
-                    result.AddDoc(curre.docID)
+                    ok_list = append(ok_list, curre.docID)
                     curre = curre.next
                 }
             } else {
                 for curre != nil {
-                    result.RemoveDoc(curre.docID)
+                    notok_list = append(notok_list, curre.docID)
                     curre = curre.next
                 }
             }
+        }
+        for _, ID := range ok_list {
+            result.AddDoc(ID)
+        }
+        for _, ID := range notok_list {
+            result.RemoveDoc(ID)
         }
         fmt.Println("result:", result.Str())
         return
