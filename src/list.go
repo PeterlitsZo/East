@@ -1,21 +1,17 @@
 package main
 
-import (
-    "strconv"
-)
-
 type DocList struct {
     length int
     start *DocListNote
 }
 
 type DocListNote struct {
-    docID int
+    docID string
     pre   *DocListNote
     next  *DocListNote
 }
 
-func (list *DocList) AddDoc(docID int) {
+func (list *DocList) AddDoc(docID string) {
     if list.length == 0 {
         list.start = &DocListNote{ docID: docID }
     } else {
@@ -42,8 +38,11 @@ func (list *DocList) AddDoc(docID int) {
     list.length += 1
 }
 
-func (list *DocList) RemoveDoc(docID int) {
+func (list *DocList) RemoveDoc(docID string) {
     current := list.start
+    if current == nil {
+        return
+    }
     for current.next != nil && current.docID != docID {
         current = current.next
     }
@@ -72,11 +71,11 @@ func (list *DocList) Str() string {
         current := list.start
         result := "[ "
         for current.next != nil {
-            result += strconv.Itoa(current.docID)
+            result += current.docID
             result += ", "
             current = current.next
         }
-        result += strconv.Itoa(current.docID)
+        result += current.docID
         result += " ]"
         return result
     }

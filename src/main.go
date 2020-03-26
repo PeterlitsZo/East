@@ -4,17 +4,16 @@ import (
     "fmt"
     "flag"
     "io/ioutil"
-    "strconv"
     "strings"
     "os"
 )
 
-type file struct {
+type File struct {
     path string
     name string
 }
 
-func getFiles(dirpath string) (files []string, err error) {
+func getFiles(dirpath string) (files []File, err error) {
     dir, err := ioutil.ReadDir(dirpath)
     if err != nil {
         return nil, err
@@ -22,7 +21,7 @@ func getFiles(dirpath string) (files []string, err error) {
     for _, file := range dir {
         if !file.IsDir() {
             file_path := dirpath + string(os.PathSeparator) + file.Name()
-            files = append(files, file_path)
+            files = append(files, File{path: file_path, name: file.Name()})
         }
     }
     return files, nil
@@ -47,8 +46,8 @@ func main() {
 
     // only do not run if under flags: '--useindex ...' without '--mkindex'
     if !*useindex || *mkindex {
-        for docID, file := range files {
-            file_byte, err := ioutil.ReadFile(file)
+        for _, file := range files {
+            file_byte, err := ioutil.ReadFile(file.path)
             if err != nil {
                 fmt.Println("ERROR:", err)
                 return
@@ -57,11 +56,11 @@ func main() {
                 _, ok := WordMap[word]
                 if ok {
                     doclist := WordMap[word]
-                    doclist.AddDoc(docID)
+                    doclist.AddDoc(file.name)
                 } else {
                     WordMap[word] = &DocList{}
                     doclist := WordMap[word]
-                    doclist.AddDoc(docID)
+                    doclist.AddDoc(file.name)
                 }
             }
         }
@@ -75,7 +74,7 @@ func main() {
             index_str += fmt.Sprintf("%v\t%v\t", key, value.length)
             curre := value.start
             for curre != nil {
-                index_str += strconv.Itoa(curre.docID) + " "
+                index_str += curre.docID + " "
                 curre = curre.next
             }
             index_str = index_str[:len(index_str)-1]
@@ -103,18 +102,13 @@ func main() {
             WordMap[line_slice[0]] = &DocList{}
             // fmt.Printf("%#v, %#v\n", line_slice, line)
             for _, docID := range strings.Split(line_slice[2], " ") {
-                docid, err := strconv.Atoi(docID)
-                if err != nil {
-                    fmt.Println("ERROR:", err)
-                    return
-                }
-                WordMap[line_slice[0]].AddDoc(docid)
+                WordMap[line_slice[0]].AddDoc(docID)
             }
         }
     }
 
-    // if is without '--mkindex'
-    if !*mkindex {
+    // if is without '--mkindex' or with '--useindex'
+    if !*mkindex || *useindex {
         result := DocList{}
         for _, aim := range com{
             docli, ok := WordMap[aim.value]
