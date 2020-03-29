@@ -30,16 +30,19 @@ func getFiles(dirpath string) (files []File, err error) {
 func main() {
     // ---[ parse args ]---------------------------------------------------------------------------
     dirpath := flag.String("dirpath", "input", "the input files' path")
-    command := flag.String("command", "", "the input files' path")
+    command := flag.String("command", "", "the command to get the ID list (see README.pdf)")
     mkindex := flag.Bool("mkindex", false, "use this flag to make index named 'index.dict'")
     useindex := flag.Bool("useindex", false, "use file 'index.dict' to find result")
     flag.Parse()
 
     files, err := getFiles(*dirpath)
+    files_docID := []string{}
+    for _, file := range files {
+        files_docID = append(files_docID, file.name)
+    }
     if err != nil { fmt.Println("ERROR:", err); return; }
 
-    com, errmsg := Aim_Parser(*command)
-    if errmsg != "" { fmt.Println("ERROR:", errmsg); return; }
+    comast := getAST(*command)
 
     // ---[ read word and make word-map ]----------------------------------------------------------
     WordMap := make(map[string]*DocList)
@@ -110,33 +113,50 @@ func main() {
     // if is without '--mkindex' or with '--useindex'
     if !*mkindex || *useindex {
         result := DocList{}
-        ok_list := []string{}
-        notok_list := []string{}
-        for _, aim := range com {
-            docli, ok := WordMap[aim.value]
-            // can't match any thing
-            if !ok { continue; }
+        if comast == nil {
+            fmt.Println("Sorry but I need your command valid")
+            return
+        }
+        // first loop: get the expr
+        for _, expr := range *comast {
+            expr_result := DocList{}
+            for _, file_docID := range files_docID{
+                expr_result.AddDoc(file_docID)
+            }
 
-            curre := docli.start
-            if aim.aim == true{
-                for curre != nil {
-                    ok_list = append(ok_list, curre.docID)
-                    curre = curre.next
+            // second loop: get the atom
+            for _, atom := range *expr{
+                doclist, ok := WordMap[atom.str]
+                if !ok {
+                    doclist = &DocList{}
                 }
-            } else {
-                for curre != nil {
-                    notok_list = append(notok_list, curre.docID)
-                    curre = curre.next
+
+                if atom.not {
+                    current := doclist.start
+                    for current != nil {
+                        expr_result.RemoveDoc(current.docID)
+                        current = current.next
+                    }
+                } else {
+                    current := expr_result.start
+                    for current != nil {
+                        if !doclist.Has(current.docID) {
+                            expr_result.RemoveDoc(current.docID)
+                        }
+                        current = current.next
+                    }
                 }
             }
-        }
-        for _, ID := range ok_list {
-            result.AddDoc(ID)
-        }
-        for _, ID := range notok_list {
-            result.RemoveDoc(ID)
+            // end of second loop 
+
+            current := expr_result.start
+            for current != nil {
+                result.AddDoc(current.docID)
+                current = current.next
+            }
         }
         fmt.Println("result:", result.Str())
         return
     }
+    return
 }
