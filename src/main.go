@@ -114,7 +114,7 @@ func main() {
     if !*mkindex || *useindex {
         result := DocList{}
         if comast == nil {
-            fmt.Println("Sorry but I need your command valid")
+            fmt.Println("Sorry but I need your command valid, use '-help' to get more info")
             return
         }
         // first loop: get the expr
