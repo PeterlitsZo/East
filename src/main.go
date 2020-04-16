@@ -6,6 +6,7 @@ import (
     "io/ioutil"
     "strings"
     "reflect"
+    "bufio"
     "os"
 )
 
@@ -138,6 +139,8 @@ func main() {
                          "use this flag to make index named 'index.dict'")
     useindex := flag.Bool("useindex", false,
                           "use file 'index.dict' to find result")
+    interactive := flag.Bool("interactive", false,
+                             "under the interactive mode")
     flag.Parse()
 
     // ---[ initial all variable ]---------------------------------------------
@@ -150,9 +153,6 @@ func main() {
         files_docID.AddDoc(file.name)
     }
     if err != nil { fmt.Println("ERROR:", err); return; }
-
-    // parser the command ast
-    comast := getAST(*command)
 
     // ---[ read word and make word-map ]--------------------------------------
     WordMap := make(map[string]*DocList)
@@ -237,18 +237,48 @@ func main() {
     }
 
     // ---[ main part ]--------------------------------------------------------
-    // if is without '--mkindex' or with '--useindex'
-    if !*mkindex || *useindex {
-        if comast == nil {
-            // empty string, default value
-            fmt.Println("need help? use flag '-help' for help")
-            return
+
+    var comast *typeAst
+    // parser the command ast
+    if *command != "" || !*interactive {
+        comast = getAST(*command)
+
+        // if is without '--mkindex' or with '--useindex'
+        if !*mkindex || *useindex {
+            if comast == nil {
+                // empty string, default value
+                fmt.Println("need help? use flag '-help' or read README for help")
+                return
+            }
+            result := AST_result(comast, files_docID, WordMap)
+            fmt.Println("result:", result.Str())
+            // --------------------------------------------------------------------
         }
-        result := AST_result(comast, files_docID, WordMap)
-        fmt.Println("result:", result.Str())
-        // --------------------------------------------------------------------
+    // interactive mode!!!
+    } else {
+        fmt.Println("Enter `quit` for quit")
+        fmt.Println("copyleft (C) Peterlits Zo <peterlitszo@outlook.com>")
+        fmt.Println("Github: github.com/PeterlitsZo")
+        fmt.Println("")
+        for {
+            reader := bufio.NewReader(os.Stdin)
+            fmt.Print("Command > ")
+            text, _ := reader.ReadString('\n')
+            text = strings.Replace(text, "\n", "", -1)
+            if text == "quit" {
+                return
+            }
+            comast = getAST(text)
+            if comast == nil {
+                fmt.Println("need help? use flag '-help' or read README for help")
+                continue
+            }
+            result := AST_result(comast, files_docID, WordMap)
+            fmt.Println("result:", result.Str())
+        }
     }
     // ------------------------------------------------------------------------
+
     return
 }
 
@@ -275,3 +305,25 @@ func main() {
 // | | | | | | (_| | | | |
 // |_| |_| |_|\__,_|_| |_|
 //                        
+
+// 
+//                             _                _      _       _        
+//  ___  ___   __      _____  | |__   __ _  ___| | __ (_)_ __ | |_ ___  
+// / __|/ _ \  \ \ /\ / / _ \ | '_ \ / _` |/ __| |/ / | | '_ \| __/ _ \ 
+// \__ \ (_) |  \ V  V /  __/ | |_) | (_| | (__|   <  | | | | | || (_) |
+// |___/\___/    \_/\_/ \___| |_.__/ \__,_|\___|_|\_\ |_|_| |_|\__\___/ 
+//                                                                      
+//            _            
+//  _ __ ___ (_)_ __   ___ 
+// | '_ ` _ \| | '_ \ / _ \
+// | | | | | | | | | |  __/
+// |_| |_| |_|_|_| |_|\___|
+//                         
+
+// 
+//              
+//              
+//              
+//  _ _ _ _ _ _ 
+// (_|_|_|_|_|_)
+//              
