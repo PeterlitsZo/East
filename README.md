@@ -20,6 +20,8 @@ Usage of ./main:
     	the command to get the ID list (see README.pdf)
   -dirpath string
     	the input files' path (default "input")
+  -interactive
+    	under the interactive mode
   -mkindex
     	use this flag to make index named 'index.dict'
   -useindex
@@ -47,6 +49,8 @@ expr    ::= atom AND expr
          |  atom
 atom    ::= NOT STR
          |  STR
+         |  NOT '(' ast ')'
+         |  '(' ast ')'
 ```
 
 实例：
@@ -54,17 +58,22 @@ atom    ::= NOT STR
 1. 'in' AND NOT 'in' OR 'her'
 2. '\'' or not '\"'
 3. 'outside' && !'inside'
+4. (('that' or !'that') and 'that')
 ```
 
 如实例所述，STR字符串是由单引号或者双引号包裹而成，支持为单引号或
 者双引号转义（其实在命令行结构下本身就需要对引号进行转义，所以难免
-会发生二次转义，比如`--command="'\\\''"`这样比较丑陋的语法，但是
-我的高数作业还有很多，实在是没有时间来支持交互式了）
+会发生二次转义，比如`--command="'\\\''"`这样比较丑陋的语法 ~~，但是
+我的高数作业还有很多，实在是没有时间来支持交互式了~~）
+
+不过可以在交互模式下使用。使用`-interactive`进入交互模式，然后来交
+互输入命令，支持同时使用单引号和双引号也不用担心二次转义啦。（看到
+是赚到）
 
 而AND，OR，NOT不仅仅支持单词（并且忽略大小写）样式，还支持C式的逻辑
-运算符，及`&&`，`||`，`!`。
+运算符，也就是说`&&`，`||`，`!`。
 
-（p.s.如果有时间的话可能会支持括号）
+现在也支持括号。~~（p.s.如果有时间的话可能会支持括号）~~
 
 示例
 ---------------------------------------
@@ -76,13 +85,14 @@ Usage of ./main:
     	the command to get the ID list (see README.pdf)
   -dirpath string
     	the input files' path (default "input")
+  -interactive
+    	under the interactive mode
   -mkindex
     	use this flag to make index named 'index.dict'
   -useindex
     	use file 'index.dict' to find result
-
 $ ./main --command="'in' || 'not'"
-result: [ d1.txt, d10.txt, d2.txt, d3.txt, d4.txt, d6.txt, d7.txt, d8.txt, d9.txt ]
+result: [ d01.txt, d10.txt, d02.txt, d03.txt, d04.txt, d06.txt, d07.txt, d08.txt, d09.txt ]
 $ ls
 README.md
 README.pdf
@@ -101,4 +111,15 @@ make.sh
 src
 $ ./main --useindex --command="not 'in'"
 result: [ d5.txt ]
+$ ./main --useindex --interactive
+Enter `quit` for quit
+copyleft (C) Peterlits Zo <peterlitszo@outlook.com>
+Github: github.com/PeterlitsZo
+
+Command > 'that' and 'peter'
+result: [ ]
+Command > 'that' and ('peter' or !'peter')
+result: [ d06.txt, d07.txt ]
+Command > quit
+$ 
 ```
