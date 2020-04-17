@@ -85,7 +85,7 @@ var re = map[int]*regexp.Regexp{
 	// e.g. not NOT, Not, !
 	NOT: regexp.MustCompile(`^([nN][oO][tT]|!)`),
 	// e.g. "PETER", "\"", '\'', '"'
-	STR: regexp.MustCompile(`^("([^"]|\\")*"|'([^']|\\')*')`),
+	STR: regexp.MustCompile(`^("(\\"|[^"])*"|'(\\'|[^'])*')`),
 }
 
 // the struct of input (member input is the string of its input)
