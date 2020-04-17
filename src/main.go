@@ -258,7 +258,7 @@ func main() {
     } else {
         fmt.Println("Enter `quit` for quit")
         fmt.Println("copyleft (C) Peterlits Zo <peterlitszo@outlook.com>")
-        fmt.Println("Github: github.com/PeterlitsZo")
+        fmt.Println("Github: github.com/PeterlitsZo/East")
         fmt.Println("")
         for {
             reader := bufio.NewReader(os.Stdin)
