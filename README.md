@@ -56,28 +56,31 @@ atom    ::= NOT STR
 实例：
 ```
 1. 'in' AND NOT 'in' OR 'her'
-2. '\'' or not '\"'
+2. "'" or not '"'
 3. 'outside' && !'inside'
 4. (('that' or !'that') and 'that')
 ```
 
 如实例所述，STR字符串是由单引号或者双引号包裹而成，支持为单引号或
 者双引号转义（其实在命令行结构下本身就需要对引号进行转义，所以难免
-会发生二次转义，比如`--command="'\\\''"`这样比较丑陋的语法 ~~，但是
-我的高数作业还有很多，实在是没有时间来支持交互式了~~）
+会发生二次转义，比如`--command="'\\\''"`这样比较丑陋的语法）~~（但
+是我的高数作业还有很多，实在是没有时间来支持交互式了）~~
 
-不过可以在交互模式下使用。使用`-interactive`进入交互模式，然后来交
-互输入命令，支持同时使用单引号和双引号也不用担心二次转义啦。（看到
-是赚到）
+不过现在甚至可以在交互模式下使用了。使用`-interactive`进入交互模式
+，然后在交互下输入命令，就算是同时使用单引号和双引号也轻轻松松、再
+也不用担心二次转义啦（看到就是赚到）。
 
-而AND，OR，NOT不仅仅支持单词（并且忽略大小写）样式，还支持C式的逻辑
+而AND，OR，NOT不仅仅支持单词（忽略大小写）样式，还支持C式的逻辑
 运算符，也就是说`&&`，`||`，`!`。
 
-现在也支持括号。~~（p.s.如果有时间的话可能会支持括号）~~
+现在还支持括号来实现更加高级的操作了。~~（p.s.如果有时间的话可能会
+支持括号）~~
 
 示例
 ---------------------------------------
 ``` shell
+$ # ---[ build itself ]------------------------------------------
+$
 $ go build -o main ./src
 $ ./main --help
 Usage of ./main:
@@ -91,8 +94,14 @@ Usage of ./main:
     	use this flag to make index named 'index.dict'
   -useindex
     	use file 'index.dict' to find result
+$
+$ # ---[ a little test using `-command` ]------------------------
+$
 $ ./main --command="'in' || 'not'"
 result: [ d01.txt, d10.txt, d02.txt, d03.txt, d04.txt, d06.txt, d07.txt, d08.txt, d09.txt ]
+$
+$ # -[ use flag `-mkindex` and `useindex` to hold the result ]---
+$
 $ ls
 README.md
 README.pdf
@@ -100,7 +109,9 @@ input
 main
 make.sh
 src
+$
 $ ./main --mkindex
+$
 $ ls # it will make a new file named index.dict
 README.md
 README.pdf
@@ -109,14 +120,18 @@ input
 main
 make.sh
 src
+$
 $ ./main --useindex --command="not 'in'"
 result: [ d5.txt ]
+$
+$ ---[ the interactive mode ]------------------------------------
+$
 $ ./main --useindex --interactive
 Enter `quit` for quit
 copyleft (C) Peterlits Zo <peterlitszo@outlook.com>
 Github: github.com/PeterlitsZo
 
-Command > 'that' and 'peter'
+Command > "that" and 'peter'
 result: [ ]
 Command > 'that' and ('peter' or !'peter')
 result: [ d06.txt, d07.txt ]
