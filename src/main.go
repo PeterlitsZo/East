@@ -2,12 +2,13 @@ package main
 
 import (
     "fmt"
-    "flag"
     "io/ioutil"
     "strings"
     "reflect"
     "bufio"
     "os"
+
+    "github.com/akamensky/argparse"
 )
 
 // ----------------------------------------------------------------------------
@@ -131,17 +132,38 @@ func ATOM_result(atom *typeAtom, all_docID *DocList, wordmap map[string]*DocList
 func main() {
     // ---[ parse args ]-------------------------------------------------------
 
+    parser := argparse.NewParser("East", "sreach engine on file system")
+
     // initial the arg-parser
-    dirpath := flag.String("dirpath", "input", "the input files' path")
-    command := flag.String("command", "",
-                           "the command to get the ID list (see README.pdf)")
-    mkindex := flag.Bool("mkindex", false,
-                         "use this flag to make index named 'index.dict'")
-    useindex := flag.Bool("useindex", false,
-                          "use file 'index.dict' to find result")
-    interactive := flag.Bool("interactive", false,
-                             "under the interactive mode")
-    flag.Parse()
+    dirpath := parser.String("d", "dirpath",
+                             &argparse.Options{
+                                 Required: false,
+                                 Help: "the input files' folder path",
+                                 Default: "input",
+                             })
+    command := parser.String("c", "command",
+                             &argparse.Options{
+                                 Required: false,
+                                 Help: "the command to get the ID list (see README.pdf)",
+                                 Default: "",
+                             })
+    mkindex := parser.Flag("m", "mkindex",
+                           &argparse.Options{
+                               Help: "use this flag to make index named 'index.dict'",
+                           })
+    useindex := parser.Flag("u", "useindex",
+                            &argparse.Options{
+                                Help: "use file 'index.dict' to find result",
+                            })
+    interactive := parser.Flag("i", "interactive",
+                               &argparse.Options{
+                                   Help: "make self under the interactive mode",
+                               })
+    err := parser.Parse(os.Args)
+    if err != nil {
+        fmt.Println(parser.Usage(err))
+        return
+    }
 
     // ---[ initial all variable ]---------------------------------------------
 
