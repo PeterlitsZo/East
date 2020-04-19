@@ -3,6 +3,7 @@ package main
 
 import (
     "reflect"
+    "fmt"
 )
 
 // ---[ return bool sreach's result ]------------------------------------------
@@ -92,4 +93,4 @@ func ATOM_result(atom *typeAtom, all_docID *DocList, wordmap map[string]*DocList
     }
     return result
 }
-`
+
