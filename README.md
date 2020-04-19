@@ -1,12 +1,11 @@
 基于LALR和链表的单词搜索
 =======================================
 
-`[WARNING]` 使用argparse来代替后没有更新文档
-
 使用
 ---------------------------------------
 请按照：
 ```
+$ go get -u -v github.com/akamensky/argparse
 $ go build -o main ./src
 ```
 进行编译。因为本软件是基于Goolge开发的开源语言go编写而成，使用
@@ -16,18 +15,19 @@ $ go build -o main ./src
 编译完成后，输入下命令可以得到主要用法：
 ```
 $ ./main --help
+usage: East [-h|--help] [-d|--dirpath "<value>"] [-c|--command "<value>"]
+            [-m|--mkindex] [-u|--useindex] [-i|--interactive]
 
-Usage of ./main:
-  -command string
-    	the command to get the ID list (see README.pdf)
-  -dirpath string
-    	the input files' path (default "input")
-  -interactive
-    	under the interactive mode
-  -mkindex
-    	use this flag to make index named 'index.dict'
-  -useindex
-    	use file 'index.dict' to find result
+            sreach engine on file system
+
+Arguments:
+
+  -h  --help         Print help information
+  -d  --dirpath      the input files' folder path. Default: input
+  -c  --command      the command to get the ID list (see README.pdf). Default: 
+  -m  --mkindex      use this flag to make index named 'index.dict'
+  -u  --useindex     use file 'index.dict' to find result
+  -i  --interactive  make self under the interactive mode
 ```
 
 通过`--mkindex`命令可以为`dirpath`文件夹（默认为input，但可以根
@@ -86,17 +86,19 @@ $ # ---[ build itself ]------------------------------------------
 $
 $ go build -o main ./src
 $ ./main --help
-Usage of ./main:
-  -command string
-    	the command to get the ID list (see README.pdf)
-  -dirpath string
-    	the input files' path (default "input")
-  -interactive
-    	under the interactive mode
-  -mkindex
-    	use this flag to make index named 'index.dict'
-  -useindex
-    	use file 'index.dict' to find result
+usage: East [-h|--help] [-d|--dirpath "<value>"] [-c|--command "<value>"]
+            [-m|--mkindex] [-u|--useindex] [-i|--interactive]
+
+            sreach engine on file system
+
+Arguments:
+
+  -h  --help         Print help information
+  -d  --dirpath      the input files' folder path. Default: input
+  -c  --command      the command to get the ID list (see README.pdf). Default: 
+  -m  --mkindex      use this flag to make index named 'index.dict'
+  -u  --useindex     use file 'index.dict' to find result
+  -i  --interactive  make self under the interactive mode
 $
 $ # ---[ a little test using `-command` ]------------------------
 $
