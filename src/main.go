@@ -78,7 +78,7 @@ func main() {
                                Help: "Show East's version",
                            })
     err := parser.Parse(os.Args)
-    if err != nil {
+    if err != nil || len(os.Args) == 1 {
         fmt.Println(parser.Usage(err))
         return
     }
