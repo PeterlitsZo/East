@@ -10,6 +10,9 @@ import (
     "github.com/akamensky/argparse"
 )
 
+// ---[ constant variable ]----------------------------------------------------
+var VERSION string = "version 0.2.3"
+
 // ----------------------------------------------------------------------------
 // ---[ UNITS FUNCTION ]-------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -70,9 +73,18 @@ func main() {
                                &argparse.Options{
                                    Help: "make self under the interactive mode",
                                })
+    version := parser.Flag("v", "version",
+                           &argparse.Options{
+                               Help: "Show East's version",
+                           })
     err := parser.Parse(os.Args)
     if err != nil {
         fmt.Println(parser.Usage(err))
+        return
+    }
+
+    if *version {
+        fmt.Println("East", VERSION)
         return
     }
 
