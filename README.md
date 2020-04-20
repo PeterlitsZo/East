@@ -3,6 +3,7 @@ East - 基于LALR和链表的单词搜索
 
 版本
 ----
+
 ``` shell
 version 0.2.3
 ```
@@ -11,10 +12,19 @@ version 0.2.3
 ----
 
 请按照：
+
 ```
 $ go get -u -v github.com/akamensky/argparse
 $ go build -o main ./src
 ```
+
+或者：
+
+```
+$ make init
+$ make
+```
+
 进行编译。因为本软件是基于Goolge开发的开源语言go编写而成，使用
 前需要安装go的编译器。go语言是一门比较小众的语言，所以如果没有
 该编译器的话，还请进入`https://golang.org/dl/`下载。
