@@ -5,7 +5,7 @@ East - 基于LALR和链表的单词搜索
 ----
 
 ``` shell
-version 0.2.4
+version 0.3.0
 ```
 
 使用
@@ -171,6 +171,7 @@ TODO
 版本历史
 --------
 
-`0.24`: 使用`Peterlits/argparse`替代原作者的库，以获得更好的usage输
+`0.3.0`: 使用前置命令以支持更多的操作，目前支持命令`sreach`
+`0.2.4`: 使用`Peterlits/argparse`替代原作者的库，以获得更好的usage输
 出（不过如果原作者如果接受了我的pull request的话，那么其实可能又
 会换回来）
