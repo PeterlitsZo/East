@@ -12,32 +12,6 @@ import (
 var VERSION string = "version 0.2.3"
 
 // ----------------------------------------------------------------------------
-// ---[ UNITS FUNCTION ]-------------------------------------------------------
-// ----------------------------------------------------------------------------
-
-// ---[ return all files ]-----------------------------------------------------
-// file struct
-type File struct {
-    path string
-    name string
-}
-
-// getFiles: funtion that need a string then return all Files under that folder
-func getFiles(dirpath string) (files []File, err error) {
-    dir, err := ioutil.ReadDir(dirpath)
-    if err != nil {
-        return nil, err
-    }
-    for _, file := range dir {
-        if !file.IsDir() {
-            file_path := dirpath + string(os.PathSeparator) + file.Name()
-            files = append(files, File{path: file_path, name: file.Name()})
-        }
-    }
-    return files, nil
-}
-
-// ----------------------------------------------------------------------------
 // ---[ MAIN FUNCTION ]--------------------------------------------------------
 // ----------------------------------------------------------------------------
 
@@ -57,7 +31,7 @@ func main() {
     // ---[ initial all variable ]---------------------------------------------
 
     // get all Files under the given folder
-    files, err := getFiles(*dirpath)
+    files, err := GetFiles(*dirpath)
     // files_docID is docID of all Files
     files_docID := &DocList{}
     for _, file := range files {
