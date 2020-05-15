@@ -33,18 +33,17 @@ $ make
 ```
 $ ./main --help
 usage: East [-h|--help] [-d|--dirpath "<value>"] [-c|--command "<value>"]
-            [-m|--mkindex] [-u|--useindex] [-i|--interactive]
-
-            sreach engine on file system
-
-Arguments:
-
-  -h  --help         Print help information
-  -d  --dirpath      the input files' folder path. Default: input
-  -c  --command      the command to get the ID list (see README.pdf). Default: 
-  -m  --mkindex      use this flag to make index named 'index.dict'
-  -u  --useindex     use file 'index.dict' to find result
-  -i  --interactive  make self under the interactive mode
+            [-m|--mkindex] [-u|--useindex] [-i|--interactive] [-v|--version]
+desciption:
+   sreach engine on file system
+arguments:
+  -h, --help         Print help information
+  -d, --dirpath      the input files' folder path. Default: input
+  -c, --command      the command to get the ID list (see README.pdf). Default: 
+  -m, --mkindex      use this flag to make index named 'index.dict'
+  -u, --useindex     use file 'index.dict' to find result
+  -i, --interactive  make self under the interactive mode
+  -v, --version      Show East's version
 ```
 
 通过`--mkindex`命令可以为`dirpath`文件夹（默认为input，但可以根
