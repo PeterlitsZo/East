@@ -8,14 +8,14 @@ import (
 
 // ---[ return bool sreach's result ]------------------------------------------
 // return the AST's result.
-func AST_result(ast *typeAst, all_docID *DocList, wordmap map[string]*DocList) *DocList {
+func AST_result(list *typeList, all_docID *DocList, wordmap map[string]*DocList) *DocList {
     result := &DocList{}
-    // if the ast's len is zero, then return the full DocList
-    if ast == nil || len(*ast) == 0 {
+    // if the list's len is zero, then return the full DocList
+    if list == nil || len(*list) == 0 {
         result.Copy(all_docID)
         return result
     }
-    for _, expr_ptr := range *ast {
+    for _, expr_ptr := range *list {
         sub_result := EXPR_result(expr_ptr, all_docID, wordmap)
         current := sub_result.start
         for current != nil {
@@ -69,8 +69,8 @@ func ATOM_result(atom *typeAtom, all_docID *DocList, wordmap map[string]*DocList
         if ok {
             result.Copy(doclist_ptr)
         }
-    case *typeAst:
-        sub_ast := atom.value.(*typeAst)
+    case *typeList:
+        sub_ast := atom.value.(*typeList)
         result.Copy(AST_result(sub_ast, all_docID, wordmap))
     default:
         // TODO: this is not OK( it look ugly )

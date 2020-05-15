@@ -9,12 +9,11 @@ package main
 import (
     "log"
     "regexp"
-    "strings"
     "unicode"
     "unicode/utf8"
 )
 
-const(
+const (
     Debug = 4
     ErrorVerbose = true
 )
@@ -25,7 +24,11 @@ type typeAtom struct {
     value interface{}
 }
 type typeExpr []*typeAtom
-type typeAst  []*typeExpr
+type typeList []*typeExpr
+type typeAst struct {
+    command string
+    value interface{}
+}
 
 var ast_result *typeAst
 
@@ -37,15 +40,17 @@ var ast_result *typeAst
 %union{
     Atom *typeAtom
     Expr *typeExpr
+    List *typeList
     Ast  *typeAst
     Str  string
 }
 
-// <<< %token AND OR NOT
+%token SREACH LIST
 %token AND OR NOT '(' ')'
 %token <Str> STR
 
 %type  <Ast>  ast
+%type  <List> sreach_word
 %type  <Expr> expr
 %type  <Atom> atom
 
@@ -56,12 +61,19 @@ top         : ast {
                 ast_result = $1
             }
 
-ast         : expr OR ast {
+ast         : SREACH sreach_word {
+                $$ = &typeAst{"sreach", $2}
+            }
+            | LIST {
+                $$ = &typeAst{"list", nil}
+            }
+
+sreach_word : expr OR sreach_word {
                 temp := append( *$3, $1 )
                 $$ = &temp
             }
             | expr {
-                temp := make( typeAst, 0 )
+                temp := make( typeList, 0 )
                 temp = append( temp, $1 )
                 $$ = &temp
             }
@@ -84,10 +96,10 @@ atom        : NOT STR {
             | STR {
                 $$ = &typeAtom{false, $1}
             }
-            | NOT '(' ast ')' {
+            | NOT '(' sreach_word ')' {
                 $$ = &typeAtom{true, $3}
             }
-            | '(' ast ')' {
+            | '(' sreach_word ')' {
                 $$ = &typeAtom{false, $2}
             }
             ;
@@ -100,14 +112,16 @@ atom        : NOT STR {
 
 // the regex machine
 var re = map[int]*regexp.Regexp{
+    // e.g. sreach, Sreach, SREACH
+    SREACH: regexp.MustCompile(`^[sS][rR][eE][aA][cC][hH]`),
     // e.g. and, AND, And, &&
-    AND: regexp.MustCompile(`^([aA][nN][dD]|&&)`),
+    AND:   regexp.MustCompile(`^([aA][nN][dD]|&&)`),
     // e.g. or, OR, Or, ||
-    OR:  regexp.MustCompile(`^([oO][rR]|\|\|)`),
+    OR:    regexp.MustCompile(`^([oO][rR]|\|\|)`),
     // e.g. not NOT, Not, !
-    NOT: regexp.MustCompile(`^([nN][oO][tT]|!)`),
+    NOT:   regexp.MustCompile(`^([nN][oO][tT]|!)`),
     // e.g. "PETER", "\"", '\'', '"'
-    STR: regexp.MustCompile(`^("(\\"|[^"])*"|'(\\'|[^'])*')`),
+    STR:   regexp.MustCompile(`^("(\\"|[^"])*"|'(\\'|[^'])*')`),
 }
 
 // the struct of input (member input is the string of its input)
@@ -168,34 +182,37 @@ func (l *GoLex) Lex(lval *yySymType) int {
             continue
         }
         switch{
-        // e.g. AND, And, and, &&
+        case re[SREACH].Match(l.input[l.pos:]):
+            l.pos += len(re[SREACH].Find(l.input[l.pos:]))
+            return SREACH
+
         case re[AND].Match(l.input[l.pos:]):
             l.pos += len(re[AND].Find(l.input[l.pos:]))
             return AND
-        // e.g. OR, Or, or, ||
+
         case re[OR].Match(l.input[l.pos:]):
             l.pos += len(re[OR].Find(l.input[l.pos:]))
             return OR
-        // e.g. NOT, Not, not, !
+
         case re[NOT].Match(l.input[l.pos:]):
             l.pos += len(re[NOT].Find(l.input[l.pos:]))
             return NOT
-        // e.g. "", '', "\"", "abc"
+
         case re[STR].Match(l.input[l.pos:]):
             str_result := re[STR].Find(l.input[l.pos:])
             l.pos += len(str_result)
             // let itself has the value that it want.
             lval.Str = getstring(string(str_result))
             return STR
-        // match "(": "("'s length is 1
+
         case string(l.input[l.pos:l.pos+1]) == "(":
             l.pos += len("(")
             return int('(')
-        // match ")": ")"'s length is 1
+
         case string(l.input[l.pos:l.pos+1]) == ")":
             l.pos += len(")")
             return int(')')
-        // match error
+
         default:
             log.Println("can't match", "\"" + string(l.input[l.pos:]) + "\"")
             return 0
@@ -211,31 +228,6 @@ func (l *GoLex) Error(s string) {
 
 // ---[ AST ]------------------------------------------------------------------
 
-// return the typeExpr object's format string
-func (expr *typeExpr) String() string {
-    result := ""
-    result += "---[ EXPR ]---\n"
-    for _, v := range *expr {
-        if v.not { result += "<NOT> "; }
-        // TODO: show the atom's string
-        // result += v.value
-        result += "\n"
-    }
-    return result
-}
-
-// return the typeAst object's format string
-func (ast *typeAst) String() string {
-    result := ""
-    result += "---[ AST ]---\n"
-    for _, v := range *ast{
-        for _, line := range strings.Split(v.String(), "\n") {
-            result += "    " + line + "\n"
-        }
-    }
-    return result
-}
-
 // from a string to build a AST( if s is empty then return a nil pointer )
 func getAST(s string) *typeAst {
     if s == "" {
@@ -245,19 +237,5 @@ func getAST(s string) *typeAst {
     // [WARNING] ast_result is a global variable
     return ast_result
 }
-
-// ---[ test ]-----------------------------------------------------------------
-
-/*
-    // test main function
-    func main(){
-        log.SetFlags(log.Ldate|log.Lshortfile)
-        log.Println("parsing command ...")
-        getAST([]byte("'me' AND 'bala' OR 'hey' AND 'hellp'"))
-    }
-*/
-
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
 
 

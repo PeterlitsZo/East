@@ -15,7 +15,6 @@ import __yyfmt__ "fmt"
 import (
 	"log"
 	"regexp"
-	"strings"
 	"unicode"
 	"unicode/utf8"
 )
@@ -31,31 +30,40 @@ type typeAtom struct {
 	value interface{}
 }
 type typeExpr []*typeAtom
-type typeAst []*typeExpr
+type typeList []*typeExpr
+type typeAst struct {
+	command string
+	value   interface{}
+}
 
 var ast_result *typeAst
 
 // ---[ end of source file head ]----------------------------------------------
 // ----------------------------------------------------------------------------
 
-//line ./src/parse.y:37
+//line ./src/parse.y:40
 type yySymType struct {
 	yys  int
 	Atom *typeAtom
 	Expr *typeExpr
+	List *typeList
 	Ast  *typeAst
 	Str  string
 }
 
-const AND = 57346
-const OR = 57347
-const NOT = 57348
-const STR = 57349
+const SREACH = 57346
+const LIST = 57347
+const AND = 57348
+const OR = 57349
+const NOT = 57350
+const STR = 57351
 
 var yyToknames = [...]string{
 	"$end",
 	"error",
 	"$unk",
+	"SREACH",
+	"LIST",
 	"AND",
 	"OR",
 	"NOT",
@@ -69,7 +77,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line ./src/parse.y:95
+//line ./src/parse.y:107
 
 // ----------------------------------------------------------------------------
 // ---[ begin of the tail source file ]----------------------------------------
@@ -78,6 +86,8 @@ const yyInitialStackSize = 16
 
 // the regex machine
 var re = map[int]*regexp.Regexp{
+	// e.g. sreach, Sreach, SREACH
+	SREACH: regexp.MustCompile(`^[sS][rR][eE][aA][cC][hH]`),
 	// e.g. and, AND, And, &&
 	AND: regexp.MustCompile(`^([aA][nN][dD]|&&)`),
 	// e.g. or, OR, Or, ||
@@ -144,34 +154,37 @@ func (l *GoLex) Lex(lval *yySymType) int {
 			continue
 		}
 		switch {
-		// e.g. AND, And, and, &&
+		case re[SREACH].Match(l.input[l.pos:]):
+			l.pos += len(re[SREACH].Find(l.input[l.pos:]))
+			return SREACH
+
 		case re[AND].Match(l.input[l.pos:]):
 			l.pos += len(re[AND].Find(l.input[l.pos:]))
 			return AND
-		// e.g. OR, Or, or, ||
+
 		case re[OR].Match(l.input[l.pos:]):
 			l.pos += len(re[OR].Find(l.input[l.pos:]))
 			return OR
-		// e.g. NOT, Not, not, !
+
 		case re[NOT].Match(l.input[l.pos:]):
 			l.pos += len(re[NOT].Find(l.input[l.pos:]))
 			return NOT
-		// e.g. "", '', "\"", "abc"
+
 		case re[STR].Match(l.input[l.pos:]):
 			str_result := re[STR].Find(l.input[l.pos:])
 			l.pos += len(str_result)
 			// let itself has the value that it want.
 			lval.Str = getstring(string(str_result))
 			return STR
-		// match "(": "("'s length is 1
+
 		case string(l.input[l.pos:l.pos+1]) == "(":
 			l.pos += len("(")
 			return int('(')
-		// match ")": ")"'s length is 1
+
 		case string(l.input[l.pos:l.pos+1]) == ")":
 			l.pos += len(")")
 			return int(')')
-		// match error
+
 		default:
 			log.Println("can't match", "\""+string(l.input[l.pos:])+"\"")
 			return 0
@@ -187,33 +200,6 @@ func (l *GoLex) Error(s string) {
 
 // ---[ AST ]------------------------------------------------------------------
 
-// return the typeExpr object's format string
-func (expr *typeExpr) String() string {
-	result := ""
-	result += "---[ EXPR ]---\n"
-	for _, v := range *expr {
-		if v.not {
-			result += "<NOT> "
-		}
-		// TODO: show the atom's string
-		// result += v.value
-		result += "\n"
-	}
-	return result
-}
-
-// return the typeAst object's format string
-func (ast *typeAst) String() string {
-	result := ""
-	result += "---[ AST ]---\n"
-	for _, v := range *ast {
-		for _, line := range strings.Split(v.String(), "\n") {
-			result += "    " + line + "\n"
-		}
-	}
-	return result
-}
-
 // from a string to build a AST( if s is empty then return a nil pointer )
 func getAST(s string) *typeAst {
 	if s == "" {
@@ -224,20 +210,6 @@ func getAST(s string) *typeAst {
 	return ast_result
 }
 
-// ---[ test ]-----------------------------------------------------------------
-
-/*
-   // test main function
-   func main(){
-       log.SetFlags(log.Ldate|log.Lshortfile)
-       log.Println("parsing command ...")
-       getAST([]byte("'me' AND 'bala' OR 'hey' AND 'hellp'"))
-   }
-*/
-
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
 //line yacctab:1
 var yyExca = [...]int{
 	-1, 1,
@@ -247,39 +219,44 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 17
+const yyLast = 20
 
 var yyAct = [...]int{
 
-	2, 5, 7, 11, 6, 10, 3, 17, 12, 13,
-	16, 8, 15, 9, 1, 4, 14,
+	5, 8, 10, 6, 9, 14, 12, 13, 20, 19,
+	11, 15, 16, 3, 4, 18, 17, 1, 7, 2,
 }
 var yyPact = [...]int{
 
-	-5, -1000, -1000, 6, 9, -4, -1000, -5, -5, -5,
-	-1000, -5, 2, -1000, -1000, -1, -1000, -1000,
+	9, -1000, -1000, -7, -1000, -1000, 3, 0, -4, -1000,
+	-7, -7, -7, -1000, -7, -1, -1000, -1000, -2, -1000,
+	-1000,
 }
 var yyPgo = [...]int{
 
-	0, 0, 6, 15, 14,
+	0, 19, 0, 3, 18, 17,
 }
 var yyR1 = [...]int{
 
-	0, 4, 1, 1, 2, 2, 3, 3, 3, 3,
+	0, 5, 1, 1, 2, 2, 3, 3, 4, 4,
+	4, 4,
 }
 var yyR2 = [...]int{
 
-	0, 1, 3, 1, 3, 1, 2, 1, 4, 3,
+	0, 1, 2, 1, 3, 1, 3, 1, 2, 1,
+	4, 3,
 }
 var yyChk = [...]int{
 
-	-1000, -4, -1, -2, -3, 6, 9, 7, 5, 4,
-	9, 7, -1, -1, -2, -1, 8, 8,
+	-1000, -5, -1, 4, 5, -2, -3, -4, 8, 11,
+	9, 7, 6, 11, 9, -2, -2, -3, -2, 10,
+	10,
 }
 var yyDef = [...]int{
 
-	0, -2, 1, 3, 5, 0, 7, 0, 0, 0,
-	6, 0, 0, 2, 4, 0, 9, 8,
+	0, -2, 1, 0, 3, 2, 5, 7, 0, 9,
+	0, 0, 0, 8, 0, 0, 4, 6, 0, 11,
+	10,
 }
 var yyTok1 = [...]int{
 
@@ -287,11 +264,11 @@ var yyTok1 = [...]int{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	7, 8,
+	9, 10,
 }
 var yyTok2 = [...]int{
 
-	2, 3, 4, 5, 6, 9,
+	2, 3, 4, 5, 6, 7, 8, 11,
 }
 var yyTok3 = [...]int{
 	0,
@@ -636,63 +613,75 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse.y:55
+//line ./src/parse.y:60
 		{
 			ast_result = yyDollar[1].Ast
 		}
 	case 2:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./src/parse.y:59
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line ./src/parse.y:64
 		{
-			temp := append(*yyDollar[3].Ast, yyDollar[1].Expr)
-			yyVAL.Ast = &temp
+			yyVAL.Ast = &typeAst{"sreach", yyDollar[2].List}
 		}
 	case 3:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse.y:63
+//line ./src/parse.y:67
 		{
-			temp := make(typeAst, 0)
-			temp = append(temp, yyDollar[1].Expr)
-			yyVAL.Ast = &temp
+			yyVAL.Ast = &typeAst{"list", nil}
 		}
 	case 4:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./src/parse.y:70
+//line ./src/parse.y:71
+		{
+			temp := append(*yyDollar[3].List, yyDollar[1].Expr)
+			yyVAL.List = &temp
+		}
+	case 5:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./src/parse.y:75
+		{
+			temp := make(typeList, 0)
+			temp = append(temp, yyDollar[1].Expr)
+			yyVAL.List = &temp
+		}
+	case 6:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line ./src/parse.y:82
 		{
 			temp := append(*yyDollar[3].Expr, yyDollar[1].Atom)
 			yyVAL.Expr = &temp
 		}
-	case 5:
+	case 7:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse.y:74
+//line ./src/parse.y:86
 		{
 			temp := make(typeExpr, 0)
 			temp = append(temp, yyDollar[1].Atom)
 			yyVAL.Expr = &temp
 		}
-	case 6:
+	case 8:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line ./src/parse.y:81
+//line ./src/parse.y:93
 		{
 			yyVAL.Atom = &typeAtom{true, yyDollar[2].Str}
 		}
-	case 7:
+	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse.y:84
+//line ./src/parse.y:96
 		{
 			yyVAL.Atom = &typeAtom{false, yyDollar[1].Str}
 		}
-	case 8:
+	case 10:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line ./src/parse.y:87
+//line ./src/parse.y:99
 		{
-			yyVAL.Atom = &typeAtom{true, yyDollar[3].Ast}
+			yyVAL.Atom = &typeAtom{true, yyDollar[3].List}
 		}
-	case 9:
+	case 11:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./src/parse.y:90
+//line ./src/parse.y:102
 		{
-			yyVAL.Atom = &typeAtom{false, yyDollar[2].Ast}
+			yyVAL.Atom = &typeAtom{false, yyDollar[2].List}
 		}
 	}
 	goto yystack /* stack new state and value */

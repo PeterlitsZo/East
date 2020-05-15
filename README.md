@@ -62,14 +62,16 @@ command实现与语法
 
 语法规则如下：
 ```
-ast     ::= expr OR ast
-         |  expr
-expr    ::= atom AND expr
-         |  atom
-atom    ::= NOT STR
-         |  STR
-         |  NOT '(' ast ')'
-         |  '(' ast ')'
+ast          ::= SREACH sreach_word
+              |  LIST
+sreach_word  ::= expr OR ast
+              |  expr
+expr         ::= atom AND expr
+              |  atom
+atom         ::= NOT STR
+              |  STR
+              |  NOT '(' ast ')'
+              |  '(' ast ')'
 ```
 
 实例：

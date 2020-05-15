@@ -9,11 +9,7 @@ import (
 )
 
 // ---[ constant variable ]----------------------------------------------------
-var VERSION string = "version 0.2.3"
-
-// ----------------------------------------------------------------------------
-// ---[ MAIN FUNCTION ]--------------------------------------------------------
-// ----------------------------------------------------------------------------
+var VERSION string = "version 0.2.4"
 
 func main() {
     // ---[ parse the argument ]-----------------------------------------------
@@ -135,7 +131,7 @@ func main() {
                 fmt.Println("need help? use flag '-help' or read README for help")
                 return
             }
-            result := AST_result(comast, files_docID, WordMap)
+            result := AST_result(comast.value.(*typeList), files_docID, WordMap)
             fmt.Println("result:", result.Str())
             // --------------------------------------------------------------------
         }
@@ -158,7 +154,7 @@ func main() {
                 fmt.Println("need help? use flag '-help' or read README for help")
                 continue
             }
-            result := AST_result(comast, files_docID, WordMap)
+            result := AST_result(comast.value.(*typeList), files_docID, WordMap)
             fmt.Println("result:", result.Str())
         }
     }
