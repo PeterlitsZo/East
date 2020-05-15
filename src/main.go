@@ -9,7 +9,7 @@ import (
 )
 
 // ---[ constant variable ]----------------------------------------------------
-var VERSION string = "version 0.2.4"
+var VERSION string = "version 0.3.0"
 
 func main() {
     // ---[ parse the argument ]-----------------------------------------------
