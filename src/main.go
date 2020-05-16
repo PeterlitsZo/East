@@ -16,7 +16,7 @@ import (
 func main() {
     pr := argparse.EastArgparse()
 
-    if pr.Err != nil {
+    if pr.Err != nil && pr.Err.Error() != "[sub]Command required\n" {
         fmt.Println(pr.Parser.Usage(pr.Err))
         return
 
@@ -41,7 +41,7 @@ func main() {
 
         return
 
-    } else if pr.Interactive.Self.Happened() {
+    } else if pr.Interactive.Self.Happened() || pr.Err.Error() == "[sub]Command required\n" {
         WordMap, files_docID := units.GetWordMap(
             *pr.Interactive.Useindex,
             *pr.Interactive.Dirpath,
@@ -67,7 +67,6 @@ func main() {
         }
 
         return
-
     }
 
     return
