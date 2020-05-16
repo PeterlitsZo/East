@@ -5,7 +5,7 @@ East - 基于LALR和链表的单词搜索
 ----
 
 ``` shell
-version 0.3.0
+version 0.4.1
 ```
 
 使用
@@ -32,27 +32,26 @@ $ make
 编译完成后，输入下命令可以得到主要用法：
 ```
 $ ./main --help
-usage: East [-h|--help] [-d|--dirpath "<value>"] [-c|--command "<value>"]
-            [-m|--mkindex] [-u|--useindex] [-i|--interactive] [-v|--version]
-desciption:
+usage: East <Command> [-h|--help]
+description:
   sreach engine on file system
+commands:
+  Run          the command to get the ID list (see README.pdf)
+  Mkindex      use this flag to make index named 'index.dict'
+  Interactive  make Self under the Interactive mode
+  Version      Show East's Version
 arguments:
-  -h, --help         Print help information
-  -d, --dirpath      the input files' folder path. Default: input
-  -c, --command      the command to get the ID list (see README.pdf). Default: 
-  -m, --mkindex      use this flag to make index named 'index.dict'
-  -u, --useindex     use file 'index.dict' to find result
-  -i, --interactive  make self under the interactive mode
-  -v, --version      Show East's version
+  -h, --help  Print help information
 ```
 
-通过`--mkindex`命令可以为`dirpath`文件夹（默认为input，但可以根
-据`--dirpath`来进行修改）生成引索，然后通过`--useindex`来让其使
-用引索文件。如果没有`--mkindex`和`--useindex`命令，则会动态遍历
+通过`mkindex`命令可以为`dirpath`文件夹（默认为input，但可以根
+据`--dirpath`来进行修改）生成引索，然后通过`--useindex`来让其
+它命令使用引索文件。如果没有`--useindex`命令，则会动态遍历
 文件夹，分词，以哈希表加链表作为数据结构（当然，使用引索文件的
 话，虽然不需要遍历分词，但是还是需要抽象成数据结构）。
 
-最后使用`--command`命令来完成主要目标：检索。语法见后文。
+最后使用`run`命令或者进入`interactive`模式来完成主要目标：检索。
+语法见后文。
 
 command实现与语法
 -----------------
@@ -76,10 +75,10 @@ atom         ::= NOT STR
 
 实例：
 ```
-1. 'in' AND NOT 'in' OR 'her'
-2. "'" or not '"'
-3. 'outside' && !'inside'
-4. (('that' or !'that') and 'that')
+1. sreach 'in' AND NOT 'in' OR 'her'
+2. sreach "'" or not '"'
+3. sreach 'outside' && !'inside'
+4. sreach (('that' or !'that') and 'that')
 ```
 
 如实例所述，STR字符串是由单引号或者双引号包裹而成，支持为单引号或
@@ -99,7 +98,9 @@ atom         ::= NOT STR
 示例
 ----
 
-``` shell
+[ 需要更新 ]
+
+```
 $ # ---[ build itself ]------------------------------------------
 $
 $ go build -o main ./src
@@ -171,7 +172,12 @@ TODO
 版本历史
 --------
 
+`0.4.1`: 重构，并让`interactive`成为默认选项。
+
+`0.4.0`: 使用`sub-command`。
+
 `0.3.0`: 使用前置命令以支持更多的操作，目前支持命令`sreach`
+
 `0.2.4`: 使用`Peterlits/argparse`替代原作者的库，以获得更好的usage输
 出（不过如果原作者如果接受了我的pull request的话，那么其实可能又
 会换回来）
