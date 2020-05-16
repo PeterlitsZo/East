@@ -11,6 +11,7 @@ import (
     "./list"
     "./parse"
     "./argparse"
+    "./logic"
 )
 
 
@@ -144,7 +145,7 @@ func main() {
         var comast *parse.TypeAst
         comast = parse.GetAST(*pr.Run.Command)
 
-        result := AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
+        result := logic.AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
         fmt.Println("result:", result.Str())
 
         return
@@ -181,7 +182,7 @@ func main() {
                 return
             }
             comast = parse.GetAST(text)
-            result := AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
+            result := logic.AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
             fmt.Println("result:", result.Str())
         }
         return

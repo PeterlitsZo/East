@@ -1,12 +1,12 @@
-package main
+package logic
 
 
 import (
     "reflect"
     "fmt"
 
-    "./list"
-    "./parse"
+    "../list"
+    "../parse"
 )
 
 // ---[ return bool sreach's result ]------------------------------------------
