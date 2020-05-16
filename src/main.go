@@ -10,6 +10,7 @@ import (
     "./units"
     "./list"
     "./parse"
+    "./argparse"
 )
 
 
@@ -103,18 +104,18 @@ func writeWordMap(wordmap *map[string]*list.DocList) {
 
 func main() {
     // ---[ parse the argument ]-----------------------------------------------
-    pr := EastArgparse()
+    pr := argparse.EastArgparse()
 
-    if pr.err != nil {
-        fmt.Println(pr.parser.Usage(pr.err))
+    if pr.Err != nil {
+        fmt.Println(pr.Parser.Usage(pr.Err))
         return
 
-    } else if pr.version.self.Happened() {
+    } else if pr.Version.Self.Happened() {
         fmt.Println(units.Version())
         return
 
-    } else if pr.mkindex.self.Happened() {
-        files, _, err := getFiles(*pr.mkindex.dirpath)
+    } else if pr.Mkindex.Self.Happened() {
+        files, _, err := getFiles(*pr.Mkindex.Dirpath)
         if err != nil {
             fmt.Println("[ERROR]:", err)
         }
@@ -123,16 +124,16 @@ func main() {
         writeWordMap(wordmap)
         return
 
-    } else if pr.run.self.Happened() {
+    } else if pr.Run.Self.Happened() {
         var WordMap *map[string]*list.DocList
         var files_docID *list.DocList
-        if *pr.run.useindex {
+        if *pr.Run.Useindex {
             WordMap = getWordMap_fromIndex("index.dict")
-            _, files_docID, _ = getFiles(*pr.mkindex.dirpath)
+            _, files_docID, _ = getFiles(*pr.Mkindex.Dirpath)
         } else {
             var files []units.File
             var err error
-            files, files_docID, err = getFiles(*pr.mkindex.dirpath)
+            files, files_docID, err = getFiles(*pr.Mkindex.Dirpath)
             if err != nil {
                 fmt.Println("[ERROR]:", err)
             }
@@ -141,24 +142,24 @@ func main() {
         }
 
         var comast *parse.TypeAst
-        comast = parse.GetAST(*pr.run.command)
+        comast = parse.GetAST(*pr.Run.Command)
 
         result := AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
         fmt.Println("result:", result.Str())
 
         return
 
-    } else if pr.interactive.self.Happened() {
+    } else if pr.Interactive.Self.Happened() {
         var WordMap *map[string]*list.DocList
         var files_docID *list.DocList
 
-        if *pr.run.useindex {
+        if *pr.Run.Useindex {
             WordMap = getWordMap_fromIndex("index.dict")
-            _, files_docID, _ = getFiles(*pr.mkindex.dirpath)
+            _, files_docID, _ = getFiles(*pr.Mkindex.Dirpath)
         } else {
             var files []units.File
             var err error
-            files, files_docID, err = getFiles(*pr.mkindex.dirpath)
+            files, files_docID, err = getFiles(*pr.Mkindex.Dirpath)
             if err != nil {
                 fmt.Println("[ERROR]:", err)
             }
