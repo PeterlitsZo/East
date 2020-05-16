@@ -9,6 +9,7 @@ import (
 
     "./units"
     "./list"
+    "./parse"
 )
 
 
@@ -139,10 +140,10 @@ func main() {
             WordMap = getWordMap(files)
         }
 
-        var comast *typeAst
-        comast = getAST(*pr.run.command)
+        var comast *parse.TypeAst
+        comast = parse.GetAST(*pr.run.command)
 
-        result := AST_result(comast.value.(*typeList), files_docID, *WordMap)
+        result := AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
         fmt.Println("result:", result.Str())
 
         return
@@ -165,7 +166,7 @@ func main() {
             WordMap = getWordMap(files)
         }
 
-        var comast *typeAst
+        var comast *parse.TypeAst
         fmt.Println("Enter `quit` for quit")
         fmt.Println("copyleft (C) Peterlits Zo <peterlitszo@outlook.com>")
         fmt.Println("Github: github.com/PeterlitsZo/East, version:", units.Version())
@@ -178,8 +179,8 @@ func main() {
             if text == "quit" {
                 return
             }
-            comast = getAST(text)
-            result := AST_result(comast.value.(*typeList), files_docID, *WordMap)
+            comast = parse.GetAST(text)
+            result := AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
             fmt.Println("result:", result.Str())
         }
         return

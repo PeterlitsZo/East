@@ -4,7 +4,7 @@
 
 // ---[ need github.com/pingcap/parser ]---------------------------------------
 
-package main
+package parse
 
 import (
     "log"
@@ -19,18 +19,18 @@ const (
 )
 
 // the part of parser's type that it want:
-type typeAtom struct {
-    not bool
-    value interface{}
+type TypeAtom struct {
+    Not bool
+    Value interface{}
 }
-type typeExpr []*typeAtom
-type typeList []*typeExpr
-type typeAst struct {
-    command string
-    value interface{}
+type TypeExpr []*TypeAtom
+type TypeList []*TypeExpr
+type TypeAst struct {
+    Command string
+    Value interface{}
 }
 
-var ast_result *typeAst
+var ast_result *TypeAst
 
 // ---[ end of source file head ]----------------------------------------------
 // ----------------------------------------------------------------------------
@@ -38,10 +38,10 @@ var ast_result *typeAst
 
 // the part of parser's type that it want:
 %union{
-    Atom *typeAtom
-    Expr *typeExpr
-    List *typeList
-    Ast  *typeAst
+    Atom *TypeAtom
+    Expr *TypeExpr
+    List *TypeList
+    Ast  *TypeAst
     Str  string
 }
 
@@ -62,10 +62,10 @@ top         : ast {
             }
 
 ast         : SREACH sreach_word {
-                $$ = &typeAst{"sreach", $2}
+                $$ = &TypeAst{"sreach", $2}
             }
             | LIST {
-                $$ = &typeAst{"list", nil}
+                $$ = &TypeAst{"list", nil}
             }
 
 sreach_word : expr OR sreach_word {
@@ -73,7 +73,7 @@ sreach_word : expr OR sreach_word {
                 $$ = &temp
             }
             | expr {
-                temp := make( typeList, 0 )
+                temp := make( TypeList, 0 )
                 temp = append( temp, $1 )
                 $$ = &temp
             }
@@ -84,23 +84,23 @@ expr        : atom AND expr {
                 $$ = &temp
             }
             | atom {
-                temp := make( typeExpr, 0 )
+                temp := make( TypeExpr, 0 )
                 temp = append( temp, $1 )
                 $$ = &temp
             }
             ;
 
 atom        : NOT STR {
-                $$ = &typeAtom{true, $2}
+                $$ = &TypeAtom{true, $2}
             }
             | STR {
-                $$ = &typeAtom{false, $1}
+                $$ = &TypeAtom{false, $1}
             }
             | NOT '(' sreach_word ')' {
-                $$ = &typeAtom{true, $3}
+                $$ = &TypeAtom{true, $3}
             }
             | '(' sreach_word ')' {
-                $$ = &typeAtom{false, $2}
+                $$ = &TypeAtom{false, $2}
             }
             ;
 
@@ -235,7 +235,7 @@ func (l *GoLex) Error(s string) {
 // ---[ AST ]------------------------------------------------------------------
 
 // from a string to build a AST( if s is empty then return a nil pointer )
-func getAST(s string) *typeAst {
+func GetAST(s string) *TypeAst {
     if s == "" {
         return nil
     }

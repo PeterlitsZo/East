@@ -6,11 +6,12 @@ import (
     "fmt"
 
     "./list"
+    "./parse"
 )
 
 // ---[ return bool sreach's result ]------------------------------------------
 // return the AST's result.
-func AST_result(list_ *typeList, all_DocID *list.DocList, wordmap map[string]*list.DocList) *list.DocList {
+func AST_result(list_ *parse.TypeList, all_DocID *list.DocList, wordmap map[string]*list.DocList) *list.DocList {
     result := &list.DocList{}
     // if the list_'s len is zero, then return the full list.DocList
     if list_ == nil || len(*list_) == 0 {
@@ -32,7 +33,7 @@ func AST_result(list_ *typeList, all_DocID *list.DocList, wordmap map[string]*li
 // return the result of expr:
 // --------------------------
 // return the expr's result. all atom is link by op 'and'
-func EXPR_result(expr *typeExpr, all_DocID *list.DocList, wordmap map[string]*list.DocList) *list.DocList {
+func EXPR_result(expr *parse.TypeExpr, all_DocID *list.DocList, wordmap map[string]*list.DocList) *list.DocList {
     // if the expr's len is zero, then return empty list.DocList
     result := &list.DocList{}
     if len(*expr) == 0 {
@@ -62,17 +63,17 @@ func EXPR_result(expr *typeExpr, all_DocID *list.DocList, wordmap map[string]*li
 // type is typeAst, then it need call AST, else it should be a string, so we
 // need get the result by wordmap. if atom.not, then need to negate it by full
 // DocID list.
-func ATOM_result(atom *typeAtom, all_DocID *list.DocList, wordmap map[string]*list.DocList) *list.DocList {
+func ATOM_result(atom *parse.TypeAtom, all_DocID *list.DocList, wordmap map[string]*list.DocList) *list.DocList {
     result := &list.DocList{}
-    switch v := atom.value.(type) {
+    switch v := atom.Value.(type) {
     case string:
-        doclist_ptr, ok := wordmap[atom.value.(string)]
+        doclist_ptr, ok := wordmap[atom.Value.(string)]
         // if it have the key then copy else return empty list, else copy the 
         if ok {
             result.Copy(doclist_ptr)
         }
-    case *typeList:
-        sub_ast := atom.value.(*typeList)
+    case *parse.TypeList:
+        sub_ast := atom.Value.(*parse.TypeList)
         result.Copy(AST_result(sub_ast, all_DocID, wordmap))
     default:
         // TODO: this is not OK( it look ugly )
@@ -80,7 +81,7 @@ func ATOM_result(atom *typeAtom, all_DocID *list.DocList, wordmap map[string]*li
         return result
     }
     // negate the result
-    if atom.not {
+    if atom.Not {
         current := all_DocID.Start
         for current != nil {
             // does not have? make it have
