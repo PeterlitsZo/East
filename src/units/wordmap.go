@@ -8,7 +8,7 @@ import (
     "../list"
 )
 
-func GetWordMap(files []File) (wordmap *map[string]*list.DocList) {
+func _getWordMap_raw(files []File) (wordmap *map[string]*list.DocList) {
     wordmap = new(map[string]*list.DocList)
     for _, file := range files {
         // read file
@@ -36,7 +36,7 @@ func GetWordMap(files []File) (wordmap *map[string]*list.DocList) {
 }
 
 
-func GetWordMap_fromIndex(file string) (wordmap *map[string]*list.DocList) {
+func _getWordMap_fromIndex(file string) (wordmap *map[string]*list.DocList) {
     // read file
     index_byte, err := ioutil.ReadFile(file)
     if err != nil {
@@ -57,6 +57,26 @@ func GetWordMap_fromIndex(file string) (wordmap *map[string]*list.DocList) {
             (*wordmap)[line_slice[0]].AddDoc(docID)
         }
     }
+    return
+}
+
+
+func GetWordMap(useindex bool, dirpath string) (
+    WordMap *map[string]*list.DocList, files_docID *list.DocList,
+) {
+	if useindex {
+		WordMap = _getWordMap_fromIndex("index.dict")
+		_, files_docID, _ = GetFiles(dirpath)
+	} else {
+		var files []File
+		var err error
+		files, files_docID, err = GetFiles(dirpath)
+		if err != nil {
+			fmt.Println("[ERROR]:", err)
+		}
+
+		WordMap = _getWordMap_raw(files)
+	}
     return
 }
 

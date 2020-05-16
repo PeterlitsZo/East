@@ -20,7 +20,7 @@ type ParserMkindex struct {
 
 type ParserInteractive struct {
     Self        *argparse.Command
-    UseIndex    *bool
+    Useindex    *bool
     Dirpath     *string
 }
 

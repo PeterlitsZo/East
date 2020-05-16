@@ -26,59 +26,30 @@ func main() {
         return
 
     } else if pr.Mkindex.Self.Happened() {
-        files, _, err := units.GetFiles(*pr.Mkindex.Dirpath)
-        if err != nil {
-            fmt.Println("[ERROR]:", err)
-        }
-
-        wordmap := units.GetWordMap(files)
+        wordmap, _ := units.GetWordMap(false, *pr.Mkindex.Dirpath)
         units.WriteWordMap(wordmap)
         return
 
     } else if pr.Run.Self.Happened() {
-        var WordMap *map[string]*list.DocList
-        var files_docID *list.DocList
-        if *pr.Run.Useindex {
-            WordMap = units.GetWordMap_fromIndex("index.dict")
-            _, files_docID, _ = units.GetFiles(*pr.Mkindex.Dirpath)
-        } else {
-            var files []units.File
-            var err error
-            files, files_docID, err = units.GetFiles(*pr.Mkindex.Dirpath)
-            if err != nil {
-                fmt.Println("[ERROR]:", err)
-            }
+        WordMap, files_docID := units.GetWordMap(
+            *pr.Run.Useindex,
+            *pr.Run.Dirpath,
+        )
 
-            WordMap = units.GetWordMap(files)
-        }
-
-        var comast *parse.TypeAst
-        comast = parse.GetAST(*pr.Run.Command)
-
+        comast := parse.GetAST(*pr.Run.Command)
         result := logic.AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
         fmt.Println("result:", result.Str())
 
         return
 
     } else if pr.Interactive.Self.Happened() {
-        var WordMap *map[string]*list.DocList
-        var files_docID *list.DocList
-
-        if *pr.Run.Useindex {
-            WordMap = units.GetWordMap_fromIndex("index.dict")
-            _, files_docID, _ = units.GetFiles(*pr.Mkindex.Dirpath)
-        } else {
-            var files []units.File
-            var err error
-            files, files_docID, err = units.GetFiles(*pr.Mkindex.Dirpath)
-            if err != nil {
-                fmt.Println("[ERROR]:", err)
-            }
-
-            WordMap = units.GetWordMap(files)
-        }
+        WordMap, files_docID := units.GetWordMap(
+            *pr.Interactive.Useindex,
+            *pr.Interactive.Dirpath,
+        )
 
         var comast *parse.TypeAst
+
         fmt.Println("Enter `quit` for quit")
         fmt.Println("copyleft (C) Peterlits Zo <peterlitszo@outlook.com>")
         fmt.Println("Github: github.com/PeterlitsZo/East, version:", units.Version())
@@ -95,6 +66,7 @@ func main() {
             result := logic.AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
             fmt.Println("result:", result.Str())
         }
+
         return
 
     }
