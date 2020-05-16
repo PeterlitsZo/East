@@ -7,7 +7,6 @@ import (
     "os"
 
     "./units"
-    "./list"
     "./parse"
     "./argparse"
     "./logic"

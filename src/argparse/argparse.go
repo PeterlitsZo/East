@@ -81,7 +81,7 @@ func EastArgparse() (pr ParsErresult) {
     pr.Interactive.Self = pr.Parser.NewCommand(
         "Interactive", "make Self under the Interactive mode",
         )
-    pr.Interactive.UseIndex = pr.Interactive.Self.Flag(
+    pr.Interactive.Useindex = pr.Interactive.Self.Flag(
         "u", "UseIndex", &argparse.Options{
             Help: "use file 'index.dict' to find result",
         })
