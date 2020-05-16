@@ -8,16 +8,17 @@ import (
     "os"
 
     "./units"
+    "./list"
 )
 
 
-func getFiles(path string) (files []units.File, files_docid *DocList, err error) {
+func getFiles(path string) (files []units.File, files_docid *list.DocList, err error) {
     files_origin, err := units.GetFiles(path)
     files = files_origin
     if err != nil {
         return nil, nil, err
     }
-    files_docid = &DocList{}
+    files_docid = &list.DocList{}
     for _, file := range files {
         files_docid.AddDoc(file.Name)
     }
@@ -25,8 +26,8 @@ func getFiles(path string) (files []units.File, files_docid *DocList, err error)
 }
 
 
-func getWordMap(files []units.File) (wordmap *map[string]*DocList) {
-    wordmap = new(map[string]*DocList)
+func getWordMap(files []units.File) (wordmap *map[string]*list.DocList) {
+    wordmap = new(map[string]*list.DocList)
     for _, file := range files {
         // read file
         file_byte, err := ioutil.ReadFile(file.Path)
@@ -43,7 +44,7 @@ func getWordMap(files []units.File) (wordmap *map[string]*DocList) {
                 doclist.AddDoc(file.Name)
             } else {
                 // if word not in the wordmap then initial a new doclist
-                (*wordmap)[word] = &DocList{}
+                (*wordmap)[word] = &list.DocList{}
                 doclist := (*wordmap)[word]
                 doclist.AddDoc(file.Name)
             }
@@ -53,7 +54,7 @@ func getWordMap(files []units.File) (wordmap *map[string]*DocList) {
 }
 
 
-func getWordMap_fromIndex(file string) (wordmap *map[string]*DocList) {
+func getWordMap_fromIndex(file string) (wordmap *map[string]*list.DocList) {
     // read file
     index_byte, err := ioutil.ReadFile(file)
     if err != nil {
@@ -68,8 +69,8 @@ func getWordMap_fromIndex(file string) (wordmap *map[string]*DocList) {
             break
         }
         line_slice := strings.Split(line, "\t")
-        // wordmap[name]       = DocList[ node, node, ... ]
-        (*wordmap)[line_slice[0]] = &DocList{}
+        // wordmap[name]       = list.DocList[ node, node, ... ]
+        (*wordmap)[line_slice[0]] = &list.DocList{}
         for _, docID := range strings.Split(line_slice[2], " ") {
             (*wordmap)[line_slice[0]].AddDoc(docID)
         }
@@ -78,17 +79,17 @@ func getWordMap_fromIndex(file string) (wordmap *map[string]*DocList) {
 }
 
 
-func writeWordMap(wordmap *map[string]*DocList) {
+func writeWordMap(wordmap *map[string]*list.DocList) {
     index_str := ""
     for key, value := range *wordmap{
         // format: 'key' 'value.length' '*value'
         // for:    'key' 'value.length' ........
-        index_str += fmt.Sprintf("%v\t%v\t", key, value.length)
+        index_str += fmt.Sprintf("%v\t%v\t", key, value.Length)
         // for:    .................... '*value'
-        curre := value.start
+        curre := value.Start
         for curre != nil {
-            index_str += curre.docID + " "
-            curre = curre.next
+            index_str += curre.DocID + " "
+            curre = curre.Next
         }
         index_str = index_str[:len(index_str)-1]
         // and a newline token
@@ -122,8 +123,8 @@ func main() {
         return
 
     } else if pr.run.self.Happened() {
-        var WordMap *map[string]*DocList
-        var files_docID *DocList
+        var WordMap *map[string]*list.DocList
+        var files_docID *list.DocList
         if *pr.run.useindex {
             WordMap = getWordMap_fromIndex("index.dict")
             _, files_docID, _ = getFiles(*pr.mkindex.dirpath)
@@ -147,8 +148,8 @@ func main() {
         return
 
     } else if pr.interactive.self.Happened() {
-        var WordMap *map[string]*DocList
-        var files_docID *DocList
+        var WordMap *map[string]*list.DocList
+        var files_docID *list.DocList
 
         if *pr.run.useindex {
             WordMap = getWordMap_fromIndex("index.dict")
