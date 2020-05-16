@@ -114,14 +114,16 @@ atom        : NOT STR {
 var re = map[int]*regexp.Regexp{
     // e.g. sreach, Sreach, SREACH
     SREACH: regexp.MustCompile(`^[sS][rR][eE][aA][cC][hH]`),
+    // e.g. list
+    LIST:   regexp.MustCompile(`^[lL][iI][sS][tT]`),
     // e.g. and, AND, And, &&
-    AND:   regexp.MustCompile(`^([aA][nN][dD]|&&)`),
+    AND:    regexp.MustCompile(`^([aA][nN][dD]|&&)`),
     // e.g. or, OR, Or, ||
-    OR:    regexp.MustCompile(`^([oO][rR]|\|\|)`),
+    OR:     regexp.MustCompile(`^([oO][rR]|\|\|)`),
     // e.g. not NOT, Not, !
-    NOT:   regexp.MustCompile(`^([nN][oO][tT]|!)`),
+    NOT:    regexp.MustCompile(`^([nN][oO][tT]|!)`),
     // e.g. "PETER", "\"", '\'', '"'
-    STR:   regexp.MustCompile(`^("(\\"|[^"])*"|'(\\'|[^'])*')`),
+    STR:    regexp.MustCompile(`^("(\\"|[^"])*"|'(\\'|[^'])*')`),
 }
 
 // the struct of input (member input is the string of its input)
@@ -184,6 +186,10 @@ func (l *GoLex) Lex(lval *yySymType) int {
         switch{
         case re[SREACH].Match(l.input[l.pos:]):
             l.pos += len(re[SREACH].Find(l.input[l.pos:]))
+            return SREACH
+
+        case re[LIST].Match(l.input[l.pos:]):
+            l.pos += len(re[LIST].Find(l.input[l.pos:]))
             return SREACH
 
         case re[AND].Match(l.input[l.pos:]):

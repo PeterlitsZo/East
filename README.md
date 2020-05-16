@@ -35,7 +35,7 @@ $ ./main --help
 usage: East [-h|--help] [-d|--dirpath "<value>"] [-c|--command "<value>"]
             [-m|--mkindex] [-u|--useindex] [-i|--interactive] [-v|--version]
 desciption:
-   sreach engine on file system
+  sreach engine on file system
 arguments:
   -h, --help         Print help information
   -d, --dirpath      the input files' folder path. Default: input

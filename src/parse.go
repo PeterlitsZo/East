@@ -88,6 +88,8 @@ const yyInitialStackSize = 16
 var re = map[int]*regexp.Regexp{
 	// e.g. sreach, Sreach, SREACH
 	SREACH: regexp.MustCompile(`^[sS][rR][eE][aA][cC][hH]`),
+	// e.g. list
+	LIST: regexp.MustCompile(`^[lL][iI][sS][tT]`),
 	// e.g. and, AND, And, &&
 	AND: regexp.MustCompile(`^([aA][nN][dD]|&&)`),
 	// e.g. or, OR, Or, ||
@@ -156,6 +158,10 @@ func (l *GoLex) Lex(lval *yySymType) int {
 		switch {
 		case re[SREACH].Match(l.input[l.pos:]):
 			l.pos += len(re[SREACH].Find(l.input[l.pos:]))
+			return SREACH
+
+		case re[LIST].Match(l.input[l.pos:]):
+			l.pos += len(re[LIST].Find(l.input[l.pos:]))
 			return SREACH
 
 		case re[AND].Match(l.input[l.pos:]):

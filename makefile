@@ -1,4 +1,8 @@
-main: ./src/parse.go ./src/list.go ./src/main.go ./src/split.go ./src/argparse.go
+SRC = ./src/argparse.go ./src/file.go ./src/list.go ./src/logic.go \
+	  ./src/main.go ./src/parse.go ./src/split.go
+UNITS = ./src/units/version.go
+
+main: $(SRC) $(UNITS)
 	go build -o main ./src
 
 ./src/parse.go : ./src/parse.y

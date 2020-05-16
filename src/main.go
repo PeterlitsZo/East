@@ -6,140 +6,168 @@ import (
     "strings"
     "bufio"
     "os"
+
+    "./units"
 )
 
-// ---[ constant variable ]----------------------------------------------------
-var VERSION string = "version 0.3.0"
+
+func getFiles(path string) (files []File, files_docid *DocList, err error) {
+    files_origin, err := GetFiles(path)
+    files = files_origin
+    if err != nil {
+        return nil, nil, err
+    }
+    files_docid = &DocList{}
+    for _, file := range files {
+        files_docid.AddDoc(file.name)
+    }
+    return
+}
+
+
+func getWordMap(files []File) (wordmap *map[string]*DocList) {
+    wordmap = new(map[string]*DocList)
+    for _, file := range files {
+        // read file
+        file_byte, err := ioutil.ReadFile(file.path)
+        if err != nil {
+            fmt.Println("error:", err)
+            return
+        }
+        // split file
+        for _, word := range Split(string(file_byte)){
+            _, ok := (*wordmap)[word]
+            if ok {
+                // if word in the wordmap then just append it
+                doclist := (*wordmap)[word]
+                doclist.AddDoc(file.name)
+            } else {
+                // if word not in the wordmap then initial a new doclist
+                (*wordmap)[word] = &DocList{}
+                doclist := (*wordmap)[word]
+                doclist.AddDoc(file.name)
+            }
+        }
+    }
+    return
+}
+
+
+func getWordMap_fromIndex(file string) (wordmap *map[string]*DocList) {
+    // read file
+    index_byte, err := ioutil.ReadFile(file)
+    if err != nil {
+        fmt.Println("ERROR:", err)
+        return
+    }
+    index_str := string(index_byte)
+    // read file's string line to line
+    for _, line := range strings.Split(index_str, "\n") {
+        // end of file
+        if line == "" {
+            break
+        }
+        line_slice := strings.Split(line, "\t")
+        // wordmap[name]       = DocList[ node, node, ... ]
+        (*wordmap)[line_slice[0]] = &DocList{}
+        for _, docID := range strings.Split(line_slice[2], " ") {
+            (*wordmap)[line_slice[0]].AddDoc(docID)
+        }
+    }
+    return
+}
+
+
+func writeWordMap(wordmap *map[string]*DocList) {
+    index_str := ""
+    for key, value := range *wordmap{
+        // format: 'key' 'value.length' '*value'
+        // for:    'key' 'value.length' ........
+        index_str += fmt.Sprintf("%v\t%v\t", key, value.length)
+        // for:    .................... '*value'
+        curre := value.start
+        for curre != nil {
+            index_str += curre.docID + " "
+            curre = curre.next
+        }
+        index_str = index_str[:len(index_str)-1]
+        // and a newline token
+        index_str += "\n"
+    }
+    // write into file
+    ioutil.WriteFile("index.dict", []byte(index_str), 0644)
+    return
+}
 
 func main() {
     // ---[ parse the argument ]-----------------------------------------------
-    parser, dirpath, command, mkindex, useindex, interactive, version, err := EastArgparse()
+    pr := EastArgparse()
 
-    if *version {
-        fmt.Println("East", VERSION)
+    if pr.err != nil {
+        fmt.Println(pr.parser.Usage(pr.err))
         return
-    }
 
-    if err != nil || len(os.Args) == 1 {
-        fmt.Println(parser.Usage(err))
+    } else if pr.version.self.Happened() {
+        fmt.Println(units.Version())
         return
-    }
-    // ---[ initial all variable ]---------------------------------------------
 
-    // get all Files under the given folder
-    files, err := GetFiles(*dirpath)
-    // files_docID is docID of all Files
-    files_docID := &DocList{}
-    for _, file := range files {
-        files_docID.AddDoc(file.name)
-    }
-    if err != nil { fmt.Println("ERROR:", err); return; }
-
-    // ---[ read word and make word-map ]--------------------------------------
-    WordMap := make(map[string]*DocList)
-    // TODO: will it a good idea to make it be a higher function to help wordmap
-    //       add a file's name?
-
-    // only do *NOT* run if under flags: '--useindex ...' without '--mkindex'
-    // : make a index(WordMap) by the files under the floder
-    if !*useindex || *mkindex {
-        for _, file := range files {
-            // read file
-            file_byte, err := ioutil.ReadFile(file.path)
-            if err != nil {
-                fmt.Println("ERROR:", err)
-                return
-            }
-            // split file
-            for _, word := range Split(string(file_byte)){
-                _, ok := WordMap[word]
-                if ok {
-                    // if word in the WordMap then just append it
-                    doclist := WordMap[word]
-                    doclist.AddDoc(file.name)
-                } else {
-                    // if word not in the WordMap then initial a new DocList
-                    WordMap[word] = &DocList{}
-                    doclist := WordMap[word]
-                    doclist.AddDoc(file.name)
-                }
-            }
-        }
-    }
-
-
-    // ---[ get the docList for command ]--------------------------------------
-    // if use '--mkindex'
-    // : it will turn map WordMap into a file.
-    if *mkindex {
-        index_str := ""
-        for key, value := range WordMap{
-            // format: 'key' 'value.length' '*value'
-            // for:    'key' 'value.length' ........
-            index_str += fmt.Sprintf("%v\t%v\t", key, value.length)
-            // for:    .................... '*value'
-            curre := value.start
-            for curre != nil {
-                index_str += curre.docID + " "
-                curre = curre.next
-            }
-            index_str = index_str[:len(index_str)-1]
-            // and a newline token
-            index_str += "\n"
-        }
-        // write into file
-        ioutil.WriteFile("index.dict", []byte(index_str), 0644)
-    }
-
-    // if under '--useindex'
-    // then use index.dict to build wordmap print the result: mkindex is flase
-    // or useindex is true
-    if *useindex && !*mkindex {
-        // read file
-        index_byte, err := ioutil.ReadFile("index.dict")
+    } else if pr.mkindex.self.Happened() {
+        files, _, err := getFiles(*pr.mkindex.dirpath)
         if err != nil {
-            fmt.Println("ERROR:", err)
-            return
+            fmt.Println("[ERROR]:", err)
         }
-        index_str := string(index_byte)
-        // read file's string line to line
-        for _, line := range strings.Split(index_str, "\n") {
-            // end of file
-            if line == "" {
-                break
+
+        wordmap := getWordMap(files)
+        writeWordMap(wordmap)
+        return
+
+    } else if pr.run.self.Happened() {
+        var WordMap *map[string]*DocList
+        var files_docID *DocList
+        if *pr.run.useindex {
+            WordMap = getWordMap_fromIndex("index.dict")
+            _, files_docID, _ = getFiles(*pr.mkindex.dirpath)
+        } else {
+            var files []File
+            var err error
+            files, files_docID, err = getFiles(*pr.mkindex.dirpath)
+            if err != nil {
+                fmt.Println("[ERROR]:", err)
             }
-            line_slice := strings.Split(line, "\t")
-            // WordMap[name]       = DocList[ node, node, ... ]
-            WordMap[line_slice[0]] = &DocList{}
-            for _, docID := range strings.Split(line_slice[2], " ") {
-                WordMap[line_slice[0]].AddDoc(docID)
-            }
+
+            WordMap = getWordMap(files)
         }
-    }
 
-    // ---[ main part ]--------------------------------------------------------
+        var comast *typeAst
+        comast = getAST(*pr.run.command)
 
-    var comast *typeAst
-    // parser the command ast
-    if *command != "" || !*interactive {
-        comast = getAST(*command)
+        result := AST_result(comast.value.(*typeList), files_docID, *WordMap)
+        fmt.Println("result:", result.Str())
 
-        // if is without '--mkindex' or with '--useindex'
-        if !*mkindex || *useindex {
-            if comast == nil {
-                // empty string, default value
-                fmt.Println("need help? use flag '-help' or read README for help")
-                return
+        return
+
+    } else if pr.interactive.self.Happened() {
+        var WordMap *map[string]*DocList
+        var files_docID *DocList
+
+        if *pr.run.useindex {
+            WordMap = getWordMap_fromIndex("index.dict")
+            _, files_docID, _ = getFiles(*pr.mkindex.dirpath)
+        } else {
+            var files []File
+            var err error
+            files, files_docID, err = getFiles(*pr.mkindex.dirpath)
+            if err != nil {
+                fmt.Println("[ERROR]:", err)
             }
-            result := AST_result(comast.value.(*typeList), files_docID, WordMap)
-            fmt.Println("result:", result.Str())
-            // --------------------------------------------------------------------
+
+            WordMap = getWordMap(files)
         }
-    // interactive mode!!!
-    } else {
+
+        var comast *typeAst
         fmt.Println("Enter `quit` for quit")
         fmt.Println("copyleft (C) Peterlits Zo <peterlitszo@outlook.com>")
-        fmt.Println("Github: github.com/PeterlitsZo/East")
+        fmt.Println("Github: github.com/PeterlitsZo/East, version:", units.Version())
         fmt.Println("")
         for {
             reader := bufio.NewReader(os.Stdin)
@@ -150,15 +178,12 @@ func main() {
                 return
             }
             comast = getAST(text)
-            if comast == nil {
-                fmt.Println("need help? use flag '-help' or read README for help")
-                continue
-            }
-            result := AST_result(comast.value.(*typeList), files_docID, WordMap)
+            result := AST_result(comast.value.(*typeList), files_docID, *WordMap)
             fmt.Println("result:", result.Str())
         }
+        return
+
     }
-    // ------------------------------------------------------------------------
 
     return
 }

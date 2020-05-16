@@ -6,63 +6,99 @@ import (
 )
 
 
-func EastArgparse() (parser *argparse.Parser, dirpath *string, command *string,
-                mkindex *bool, useindex *bool, interactive *bool,
-                version *bool, err error) {
+type ParserRun struct {
+     self       *argparse.Command
+     useindex   *bool
+     command    *string
+     dirpath    *string
+}
+
+type ParserMkindex struct {
+    self        *argparse.Command
+    dirpath     *string
+}
+
+type ParserInteractive struct {
+    self        *argparse.Command
+    useindex    *bool
+    dirpath     *string
+}
+
+type ParserVersion struct {
+    self        *argparse.Command
+}
+
+
+type ParserResult struct {
+    parser       *argparse.Parser
+    run          ParserRun
+    mkindex      ParserMkindex
+    interactive  ParserInteractive
+    version      ParserVersion
+    err          error
+}
+
+
+func EastArgparse() (pr ParserResult) {
     // ---[ parse args ]-------------------------------------------------------
 
-    parser = argparse.NewParser("East", "sreach engine on file system")
+    pr.parser = argparse.NewParser("East", "sreach engine on file system")
 
-    // initial the arg-parser
-    // 
-    // the input files' folder path
-    dirpath = parser.String(
-        "d", "dirpath",
-        &argparse.Options{
-            Required: false,
-            Help: "the input files' folder path",
-            Default: "input",
-    })
-
+    // command
     // the short command usage
-    command = parser.String(
-        "c", "command",
-        &argparse.Options{
-            Required: false,
-            Help: "the command to get the ID list (see README.pdf)",
-            Default: "",
-    })
-
-    // to make a index file or not
-    mkindex = parser.Flag(
-        "m", "mkindex",
-        &argparse.Options{
-            Help: "use this flag to make index named 'index.dict'",
-    })
-
-    // use the index file or not
-    useindex = parser.Flag(
-        "u", "useindex",
-        &argparse.Options{
+    pr.run.self = pr.parser.NewCommand(
+        "run", "the command to get the ID list (see README.pdf)",
+        )
+    pr.run.useindex = pr.run.self.Flag(
+        "u", "useindex", &argparse.Options{
             Help: "use file 'index.dict' to find result",
-    })
+        })
+    pr.run.command = pr.run.self.String(
+        "c", "command", &argparse.Options{
+            Required: true,
+            Help: "the command to run (see README.pdf for more infos)",
+        })
+    pr.run.dirpath = pr.run.self.String(
+        "d", "dirpath", &argparse.Options{
+            Required: false,
+            Help: "the command to run (see README.pdf for more infos)",
+            Default: "input",
+        })
 
+    // mkindex
+    // to make a index file or not
+    pr.mkindex.self = pr.parser.NewCommand(
+        "mkindex", "use this flag to make index named 'index.dict'")
+    pr.mkindex.dirpath = pr.mkindex.self.String(
+        "d", "dirpath", &argparse.Options{
+            Required: false,
+            Help: "the command to run (see README.pdf for more infos)",
+            Default: "input",
+        })
+
+    // interactive
     // to use interactive or not
-    interactive = parser.Flag(
-        "i", "interactive",
-        &argparse.Options{
-            Help: "make self under the interactive mode",
-    })
+    pr.interactive.self = pr.parser.NewCommand(
+        "interactive", "make self under the interactive mode",
+        )
+    pr.interactive.useindex = pr.interactive.self.Flag(
+        "u", "useindex", &argparse.Options{
+            Help: "use file 'index.dict' to find result",
+        })
+    pr.interactive.dirpath = pr.interactive.self.String(
+        "d", "dirpath", &argparse.Options{
+            Required: false,
+            Help: "the command to run (see README.pdf for more infos)",
+            Default: "input",
+        })
 
+    // version
     // to show self's version
-    version = parser.Flag(
-        "v", "version",
-        &argparse.Options{
-            Help: "Show East's version",
-    })
+    pr.version.self = pr.parser.NewCommand(
+        "version", "Show East's version")
 
     // parse the argument, and if there is error, then raise it out
-    err = parser.Parse(os.Args)
+    pr.err = pr.parser.Parse(os.Args)
 
     // return the value
     return
