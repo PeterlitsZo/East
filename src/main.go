@@ -11,25 +11,25 @@ import (
 )
 
 
-func getFiles(path string) (files []File, files_docid *DocList, err error) {
-    files_origin, err := GetFiles(path)
+func getFiles(path string) (files []units.File, files_docid *DocList, err error) {
+    files_origin, err := units.GetFiles(path)
     files = files_origin
     if err != nil {
         return nil, nil, err
     }
     files_docid = &DocList{}
     for _, file := range files {
-        files_docid.AddDoc(file.name)
+        files_docid.AddDoc(file.Name)
     }
     return
 }
 
 
-func getWordMap(files []File) (wordmap *map[string]*DocList) {
+func getWordMap(files []units.File) (wordmap *map[string]*DocList) {
     wordmap = new(map[string]*DocList)
     for _, file := range files {
         // read file
-        file_byte, err := ioutil.ReadFile(file.path)
+        file_byte, err := ioutil.ReadFile(file.Path)
         if err != nil {
             fmt.Println("error:", err)
             return
@@ -40,12 +40,12 @@ func getWordMap(files []File) (wordmap *map[string]*DocList) {
             if ok {
                 // if word in the wordmap then just append it
                 doclist := (*wordmap)[word]
-                doclist.AddDoc(file.name)
+                doclist.AddDoc(file.Name)
             } else {
                 // if word not in the wordmap then initial a new doclist
                 (*wordmap)[word] = &DocList{}
                 doclist := (*wordmap)[word]
-                doclist.AddDoc(file.name)
+                doclist.AddDoc(file.Name)
             }
         }
     }
@@ -128,7 +128,7 @@ func main() {
             WordMap = getWordMap_fromIndex("index.dict")
             _, files_docID, _ = getFiles(*pr.mkindex.dirpath)
         } else {
-            var files []File
+            var files []units.File
             var err error
             files, files_docID, err = getFiles(*pr.mkindex.dirpath)
             if err != nil {
@@ -154,7 +154,7 @@ func main() {
             WordMap = getWordMap_fromIndex("index.dict")
             _, files_docID, _ = getFiles(*pr.mkindex.dirpath)
         } else {
-            var files []File
+            var files []units.File
             var err error
             files, files_docID, err = getFiles(*pr.mkindex.dirpath)
             if err != nil {

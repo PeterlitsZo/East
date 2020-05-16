@@ -1,4 +1,4 @@
-package main
+package units
 
 import (
     "io/ioutil"
@@ -6,8 +6,8 @@ import (
 )
 
 type File struct {
-    path string
-    name string
+    Path string
+    Name string
 }
 
 func GetFiles(dirpath string) (files []File, err error) {
@@ -18,7 +18,7 @@ func GetFiles(dirpath string) (files []File, err error) {
     for _, file := range dir {
         if !file.IsDir() {
             file_path := dirpath + string(os.PathSeparator) + file.Name()
-            files = append(files, File{path: file_path, name: file.Name()})
+            files = append(files, File{Path: file_path, Name: file.Name()})
         }
     }
     return files, nil
