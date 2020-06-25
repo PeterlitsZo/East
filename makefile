@@ -1,15 +1,15 @@
 viewer   = chrome.exe
 
 SRC      = ./src/main.go
-UNITS    = ./src/units/version.go     ./src/units/split.go   ./src/units/file.go
-LIST     = ./src/list/list.go
+UNITS    = ./src/units/version.go     ./src/units/split.go   ./src/units/file.go \
+		   ./src/units/list.go
 PARSE    = ./src/parse/parse.y        ./src/parse/parse.go
 ARGPARSE = ./src/argparse/argparse.go
 LOGIC    = ./src/logic/logic.go
 
 DOC      = ./doc/README.tex
 
-main: $(SRC) $(UNITS) $(LIST) $(PARSE) $(ARGPARSE) $(LOGIC) doc
+main: $(SRC) $(UNITS) $(PARSE) $(ARGPARSE) $(LOGIC)
 	go build -o main ./src
 
 ./src/parse/parse.go : ./src/parse/parse.y

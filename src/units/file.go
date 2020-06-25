@@ -3,8 +3,6 @@ package units
 import (
     "io/ioutil"
     "os"
-
-    "../list"
 )
 
 type File struct {
@@ -26,13 +24,13 @@ func _getFiles(dirpath string) (files []File, err error) {
     return files, nil
 }
 
-func GetFiles(path string) (files []File, files_docid *list.DocList, err error) {
+func GetFiles(path string) (files []File, files_docid *DocList, err error) {
     files_origin, err := _getFiles(path)
     files = files_origin
     if err != nil {
         return nil, nil, err
     }
-    files_docid = &list.DocList{}
+    files_docid = &DocList{}
     for _, file := range files {
         files_docid.AddDoc(file.Name)
     }

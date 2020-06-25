@@ -1,4 +1,4 @@
-package list
+package units
 
 type DocList struct {
     Length int
@@ -125,7 +125,7 @@ func (list *DocList) Copy(other *DocList) {
 // return the string of DocList object
 // -----------------------------------
 // e.g. (DocList{"1", "2", "3", "4"} -> [1, 2, 3, 4]
-func (list *DocList) Str() string {
+func (list *DocList) String() string {
     // if it is a empty DocList then return "[ ]"
     if list.Length == 0 {
         return "[ ]"

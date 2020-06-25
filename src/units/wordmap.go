@@ -4,12 +4,10 @@ import (
     "fmt"
     "strings"
     "io/ioutil"
-
-    "../list"
 )
 
-func _getWordMap_raw(files []File) (wordmap *map[string]*list.DocList) {
-    wordmap = new(map[string]*list.DocList)
+func _getWordMap_raw(files []File) (wordmap *map[string]*DocList) {
+    wordmap = new(map[string]*DocList)
     for _, file := range files {
         // read file
         file_byte, err := ioutil.ReadFile(file.Path)
@@ -26,7 +24,7 @@ func _getWordMap_raw(files []File) (wordmap *map[string]*list.DocList) {
                 doclist.AddDoc(file.Name)
             } else {
                 // if word not in the wordmap then initial a new doclist
-                (*wordmap)[word] = &list.DocList{}
+                (*wordmap)[word] = &DocList{}
                 doclist := (*wordmap)[word]
                 doclist.AddDoc(file.Name)
             }
@@ -36,7 +34,7 @@ func _getWordMap_raw(files []File) (wordmap *map[string]*list.DocList) {
 }
 
 
-func _getWordMap_fromIndex(file string) (wordmap *map[string]*list.DocList) {
+func _getWordMap_fromIndex(file string) (wordmap *map[string]*DocList) {
     // read file
     index_byte, err := ioutil.ReadFile(file)
     if err != nil {
@@ -51,8 +49,8 @@ func _getWordMap_fromIndex(file string) (wordmap *map[string]*list.DocList) {
             break
         }
         line_slice := strings.Split(line, "	")
-        // wordmap[name]       = list.DocList[ node, node, ... ]
-        (*wordmap)[line_slice[0]] = &list.DocList{}
+        // wordmap[name]       = DocList[ node, node, ... ]
+        (*wordmap)[line_slice[0]] = &DocList{}
         for _, docID := range strings.Split(line_slice[2], " ") {
             (*wordmap)[line_slice[0]].AddDoc(docID)
         }
@@ -62,7 +60,7 @@ func _getWordMap_fromIndex(file string) (wordmap *map[string]*list.DocList) {
 
 
 func GetWordMap(useindex bool, dirpath string) (
-    WordMap *map[string]*list.DocList, files_docID *list.DocList,
+    WordMap *map[string]*DocList, files_docID *DocList,
 ) {
 	if useindex {
 		WordMap = _getWordMap_fromIndex("index.dict")
@@ -81,7 +79,7 @@ func GetWordMap(useindex bool, dirpath string) (
 }
 
 
-func WriteWordMap(wordmap *map[string]*list.DocList) {
+func WriteWordMap(wordmap *map[string]*DocList) {
     index_str := ""
     for key, value := range *wordmap{
         // format: 'key' 'value.length' '*value'

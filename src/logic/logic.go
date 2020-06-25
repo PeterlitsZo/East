@@ -5,15 +5,15 @@ import (
     "reflect"
     "fmt"
 
-    "../list"
+    "../units"
     "../parse"
 )
 
 // ---[ return bool sreach's result ]------------------------------------------
 // return the AST's result.
-func AST_result(list_ *parse.TypeList, all_DocID *list.DocList, wordmap map[string]*list.DocList) *list.DocList {
-    result := &list.DocList{}
-    // if the list_'s len is zero, then return the full list.DocList
+func AST_result(list_ *parse.TypeList, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
+    result := &units.DocList{}
+    // if the list_'s len is zero, then return the full units.DocList
     if list_ == nil || len(*list_) == 0 {
         result.Copy(all_DocID)
         return result
@@ -33,9 +33,9 @@ func AST_result(list_ *parse.TypeList, all_DocID *list.DocList, wordmap map[stri
 // return the result of expr:
 // --------------------------
 // return the expr's result. all atom is link by op 'and'
-func EXPR_result(expr *parse.TypeExpr, all_DocID *list.DocList, wordmap map[string]*list.DocList) *list.DocList {
-    // if the expr's len is zero, then return empty list.DocList
-    result := &list.DocList{}
+func EXPR_result(expr *parse.TypeExpr, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
+    // if the expr's len is zero, then return empty units.DocList
+    result := &units.DocList{}
     if len(*expr) == 0 {
         return result
     // else initial it by the first node
@@ -62,9 +62,9 @@ func EXPR_result(expr *parse.TypeExpr, all_DocID *list.DocList, wordmap map[stri
 // atom's value is a interface, we need know that the type of the value. if the
 // type is typeAst, then it need call AST, else it should be a string, so we
 // need get the result by wordmap. if atom.not, then need to negate it by full
-// DocID list.
-func ATOM_result(atom *parse.TypeAtom, all_DocID *list.DocList, wordmap map[string]*list.DocList) *list.DocList {
-    result := &list.DocList{}
+// DocID units.
+func ATOM_result(atom *parse.TypeAtom, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
+    result := &units.DocList{}
     switch v := atom.Value.(type) {
     case string:
         doclist_ptr, ok := wordmap[atom.Value.(string)]
