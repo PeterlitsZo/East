@@ -14,24 +14,31 @@ import (
 
 
 func main() {
+    // parse the argument
     pr := argparse.EastArgparse()
 
+    // if East raise the error, then putout the usage
     if pr.Err != nil && pr.Err.Error() != "[sub]Command required\n" {
         fmt.Println(pr.Parser.Usage(pr.Err))
         return
 
+    // if it need the version, then putout the version
     } else if pr.Version.Self.Happened() {
         fmt.Println(units.Version())
         return
 
+    // if it need to make the index file, then make it
     } else if pr.Mkindex.Self.Happened() {
         wordmap, _ := units.GetWordMap(false, *pr.Mkindex.Dirpath)
         units.WriteWordMap(wordmap)
         return
 
+    // if it need to run a command, then run it
     } else if pr.Run.Self.Happened() {
         WordMap, files_docID := units.GetWordMap(
+            // need index file?
             *pr.Run.Useindex,
+            // the input folder path
             *pr.Run.Dirpath,
         )
 
@@ -41,9 +48,12 @@ func main() {
 
         return
 
+    // if it need to get into interactive mode, then make it
     } else if pr.Interactive.Self.Happened() || pr.Err.Error() == "[sub]Command required\n" {
         WordMap, files_docID := units.GetWordMap(
+            // need index file?
             *pr.Interactive.Useindex,
+            // the input folder path
             *pr.Interactive.Dirpath,
         )
 
@@ -66,10 +76,10 @@ func main() {
             fmt.Println("result:", result.Str())
         }
 
-        return
     }
 
     return
+
 }
 
 // copyleft: PeterlitsZo<peterlitszo@outlook.com>

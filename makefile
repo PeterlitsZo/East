@@ -1,16 +1,28 @@
-SRC      =  ./src/main.go
-UNITS    =  ./src/units/version.go     ./src/units/split.go   ./src/units/file.go
-LIST     =  ./src/list/list.go
-PARSE    =  ./src/parse/parse.y        ./src/parse/parse.go
-ARGPARSE =  ./src/argparse/argparse.go
-LOGIC    =  ./src/logic/logic.go
+viewer   = chrome.exe
 
-main: $(SRC) $(UNITS) $(LIST) $(PARSE) $(ARGPARSE) $(LOGIC)
+SRC      = ./src/main.go
+UNITS    = ./src/units/version.go     ./src/units/split.go   ./src/units/file.go
+LIST     = ./src/list/list.go
+PARSE    = ./src/parse/parse.y        ./src/parse/parse.go
+ARGPARSE = ./src/argparse/argparse.go
+LOGIC    = ./src/logic/logic.go
+
+DOC      = ./doc/README.tex
+
+main: $(SRC) $(UNITS) $(LIST) $(PARSE) $(ARGPARSE) $(LOGIC) doc
 	go build -o main ./src
 
 ./src/parse/parse.go : ./src/parse/parse.y
 	goyacc -o ./src/parse/parse.go ./src/parse/parse.y
 	rm y.output
+
+.PHONY: doc
+doc: $(DOC)
+	cd ./doc && lualatex ./README.tex && mv ./README.pdf ..
+
+.PHONY: look
+look:
+	$(viewer) ./README.pdf
 
 .PHONY: init
 init:
@@ -18,6 +30,6 @@ init:
 
 .PHONY: clean
 clean:
-	rm ./main
-	rm ./index.dict
-	rm ./src/parse.go
+	-rm ./main
+	-rm ./index.dict
+	-rm ./src/parse.go

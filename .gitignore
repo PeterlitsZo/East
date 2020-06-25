@@ -1,2 +1,7 @@
 main
 index.dict
+
+*.aux
+*.log
+*.out
+*.toc
