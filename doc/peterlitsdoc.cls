@@ -22,6 +22,52 @@
 
 % \RequirePackage[right=3cm, left=3cm, top=3.5cm, bottom=3.5cm]{geometry}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\luae}[1]{%
+    \luaexec{tex.print(#1)}%
+}
+
+\newcommand{\luad}[1]{%
+    \luadirect{tex.print(#1)}%
+}
+
+\newbox\pltbarboxi
+
+\newcommand{\pltbar}[3]{{%
+    % end paragraph
+    \par%
+    % inital the base length
+    \setlength{\baselineskip}{0pt}%
+    % add vspace between paragraphs
+    \vspace*{0.5ex}%
+    \par%
+    % save the index to the box
+    \sbox\pltbarboxi{\parbox[c]{0.2\textwidth}{#1}}%
+    % add a line
+    \hspace{3pt}%
+    \parbox[c]{1pt}{\rule{1pt}{\the\ht\pltbarboxi + \the\dp\pltbarboxi}}%
+    \hfill%
+    % show the index
+    \usebox{\pltbarboxi}%
+    \hfill\hfill%
+    % draw a bar
+    \edef\rate{\luad{(#2) / (#3)}}
+    \parbox[c]{0.7\textwidth}{%
+        \begin{tikzpicture}
+            % darw the outside box
+            \draw (0, 0) rectangle (0.6\textwidth, 1ex);
+            % darw the black rule to show the bar
+            \fill (0, 0) rectangle (\rate * 0.6\textwidth, 1ex);
+            % print the precent of the bar in text mode
+            \node[left] (A) at (0.7\textwidth, 0.5ex) {%
+                \ttfamily%
+                \luae{string.format("\%.1f", \rate * 100).."\\\%"}%
+            };
+        \end{tikzpicture}
+    }%
+    \par%
+}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % useful package
