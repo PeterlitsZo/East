@@ -2,7 +2,9 @@
 package units
 
 type Env struct {
-    Path string
-    Name string
+    // the all DocID
+    DocID *DocList
+    // the word in DocList
+    WordMap *map[string]DocList
 }
 

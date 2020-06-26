@@ -9,9 +9,13 @@ import (
     "../parse"
 )
 
+func Run(AST *parse.AST, env *units.Env) interface{} {
+    return 0
+}
+
 // ---[ return bool sreach's result ]------------------------------------------
 // return the AST's result.
-func AST_result(list_ *parse.TypeList, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
+func AST_result(list_ *parse.ExprList, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
     result := &units.DocList{}
     // if the list_'s len is zero, then return the full units.DocList
     if list_ == nil || len(*list_) == 0 {
@@ -33,7 +37,7 @@ func AST_result(list_ *parse.TypeList, all_DocID *units.DocList, wordmap map[str
 // return the result of expr:
 // --------------------------
 // return the expr's result. all atom is link by op 'and'
-func EXPR_result(expr *parse.TypeExpr, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
+func EXPR_result(expr *parse.Expr, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
     // if the expr's len is zero, then return empty units.DocList
     result := &units.DocList{}
     if len(*expr) == 0 {
@@ -63,7 +67,7 @@ func EXPR_result(expr *parse.TypeExpr, all_DocID *units.DocList, wordmap map[str
 // type is typeAst, then it need call AST, else it should be a string, so we
 // need get the result by wordmap. if atom.not, then need to negate it by full
 // DocID units.
-func ATOM_result(atom *parse.TypeAtom, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
+func ATOM_result(atom *parse.Atom, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
     result := &units.DocList{}
     switch v := atom.Value.(type) {
     case string:
@@ -72,8 +76,8 @@ func ATOM_result(atom *parse.TypeAtom, all_DocID *units.DocList, wordmap map[str
         if ok {
             result.Copy(doclist_ptr)
         }
-    case *parse.TypeList:
-        sub_ast := atom.Value.(*parse.TypeList)
+    case *parse.ExprList:
+        sub_ast := atom.Value.(*parse.ExprList)
         result.Copy(AST_result(sub_ast, all_DocID, wordmap))
     default:
         // TODO: this is not OK( it look ugly )

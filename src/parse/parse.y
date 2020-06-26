@@ -19,20 +19,21 @@ const (
 )
 
 // the part of parser's type that it want:
-type TypeAst struct {
+type AST struct {
     Command string
     Value interface{}
 }
 
 // if the Command is "sreach"
-type TypeAtom struct {
+type Atom struct {
     Not bool
     Value interface{}
 }
-type TypeExpr []*TypeAtom
-type TypeList []*TypeExpr
+type Expr []*Atom
+type ExprList []*Expr
 
-var ast_result *TypeAst
+// the global variable to hold the AST
+var ast_result *AST
 
 // ---[ end of source file head ]----------------------------------------------
 // ----------------------------------------------------------------------------
@@ -40,10 +41,10 @@ var ast_result *TypeAst
 
 // the part of parser's type that it want:
 %union{
-    Atom *TypeAtom
-    Expr *TypeExpr
-    List *TypeList
-    Ast  *TypeAst
+    Atom *Atom
+    Expr *Expr
+    ExprList *ExprList
+    AST  *AST
     Str  string
 }
 
@@ -51,11 +52,10 @@ var ast_result *TypeAst
 %token AND OR NOT '(' ')'
 %token <Str> STR
 
-%type  <Ast>  ast
-%type  <List> sreach_word
+%type  <AST>  ast
+%type  <ExprList> sreach_word
 %type  <Expr> expr
 %type  <Atom> atom
-
 
 %%
 
@@ -64,13 +64,13 @@ top         : ast {
             }
 
 ast         : SREACH sreach_word {
-                $$ = &TypeAst{"sreach", $2}
+                $$ = &AST{"sreach", $2}
             }
             | LIST {
-                $$ = &TypeAst{"list", nil}
+                $$ = &AST{"list", nil}
             }
             | PRINT STR{
-                $$ = &TypeAst{"print", $2}
+                $$ = &AST{"print", $2}
             }
 
 sreach_word : expr OR sreach_word {
@@ -78,7 +78,7 @@ sreach_word : expr OR sreach_word {
                 $$ = &temp
             }
             | expr {
-                temp := make( TypeList, 0 )
+                temp := make( ExprList, 0 )
                 temp = append( temp, $1 )
                 $$ = &temp
             }
@@ -89,23 +89,23 @@ expr        : atom AND expr {
                 $$ = &temp
             }
             | atom {
-                temp := make( TypeExpr, 0 )
+                temp := make( Expr, 0 )
                 temp = append( temp, $1 )
                 $$ = &temp
             }
             ;
 
 atom        : NOT STR {
-                $$ = &TypeAtom{true, $2}
+                $$ = &Atom{true, $2}
             }
             | STR {
-                $$ = &TypeAtom{false, $1}
+                $$ = &Atom{false, $1}
             }
             | NOT '(' sreach_word ')' {
-                $$ = &TypeAtom{true, $3}
+                $$ = &Atom{true, $3}
             }
             | '(' sreach_word ')' {
-                $$ = &TypeAtom{false, $2}
+                $$ = &Atom{false, $2}
             }
             ;
 
@@ -246,7 +246,7 @@ func (l *GoLex) Error(s string) {
 // ---[ AST ]------------------------------------------------------------------
 
 // from a string to build a AST( if s is empty then return a nil pointer )
-func GetAST(s string) *TypeAst {
+func GetAST(s string) *AST {
     if s == "" {
         return nil
     }

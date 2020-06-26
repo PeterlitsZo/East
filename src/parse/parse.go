@@ -25,32 +25,33 @@ const (
 )
 
 // the part of parser's type that it want:
-type TypeAst struct {
+type AST struct {
 	Command string
 	Value   interface{}
 }
 
 // if the Command is "sreach"
-type TypeAtom struct {
+type Atom struct {
 	Not   bool
 	Value interface{}
 }
-type TypeExpr []*TypeAtom
-type TypeList []*TypeExpr
+type Expr []*Atom
+type ExprList []*Expr
 
-var ast_result *TypeAst
+// the global variable to hold the AST
+var ast_result *AST
 
 // ---[ end of source file head ]----------------------------------------------
 // ----------------------------------------------------------------------------
 
-//line ./src/parse/parse.y:42
+//line ./src/parse/parse.y:43
 type yySymType struct {
-	yys  int
-	Atom *TypeAtom
-	Expr *TypeExpr
-	List *TypeList
-	Ast  *TypeAst
-	Str  string
+	yys      int
+	Atom     *Atom
+	Expr     *Expr
+	ExprList *ExprList
+	AST      *AST
+	Str      string
 }
 
 const SREACH = 57346
@@ -217,7 +218,7 @@ func (l *GoLex) Error(s string) {
 // ---[ AST ]------------------------------------------------------------------
 
 // from a string to build a AST( if s is empty then return a nil pointer )
-func GetAST(s string) *TypeAst {
+func GetAST(s string) *AST {
 	if s == "" {
 		return nil
 	}
@@ -632,40 +633,40 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line ./src/parse/parse.y:62
 		{
-			ast_result = yyDollar[1].Ast
+			ast_result = yyDollar[1].AST
 		}
 	case 2:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line ./src/parse/parse.y:66
 		{
-			yyVAL.Ast = &TypeAst{"sreach", yyDollar[2].List}
+			yyVAL.AST = &AST{"sreach", yyDollar[2].ExprList}
 		}
 	case 3:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line ./src/parse/parse.y:69
 		{
-			yyVAL.Ast = &TypeAst{"list", nil}
+			yyVAL.AST = &AST{"list", nil}
 		}
 	case 4:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line ./src/parse/parse.y:72
 		{
-			yyVAL.Ast = &TypeAst{"print", yyDollar[2].Str}
+			yyVAL.AST = &AST{"print", yyDollar[2].Str}
 		}
 	case 5:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line ./src/parse/parse.y:76
 		{
-			temp := append(*yyDollar[3].List, yyDollar[1].Expr)
-			yyVAL.List = &temp
+			temp := append(*yyDollar[3].ExprList, yyDollar[1].Expr)
+			yyVAL.ExprList = &temp
 		}
 	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line ./src/parse/parse.y:80
 		{
-			temp := make(TypeList, 0)
+			temp := make(ExprList, 0)
 			temp = append(temp, yyDollar[1].Expr)
-			yyVAL.List = &temp
+			yyVAL.ExprList = &temp
 		}
 	case 7:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -678,7 +679,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line ./src/parse/parse.y:91
 		{
-			temp := make(TypeExpr, 0)
+			temp := make(Expr, 0)
 			temp = append(temp, yyDollar[1].Atom)
 			yyVAL.Expr = &temp
 		}
@@ -686,25 +687,25 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line ./src/parse/parse.y:98
 		{
-			yyVAL.Atom = &TypeAtom{true, yyDollar[2].Str}
+			yyVAL.Atom = &Atom{true, yyDollar[2].Str}
 		}
 	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line ./src/parse/parse.y:101
 		{
-			yyVAL.Atom = &TypeAtom{false, yyDollar[1].Str}
+			yyVAL.Atom = &Atom{false, yyDollar[1].Str}
 		}
 	case 11:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line ./src/parse/parse.y:104
 		{
-			yyVAL.Atom = &TypeAtom{true, yyDollar[3].List}
+			yyVAL.Atom = &Atom{true, yyDollar[3].ExprList}
 		}
 	case 12:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line ./src/parse/parse.y:107
 		{
-			yyVAL.Atom = &TypeAtom{false, yyDollar[2].List}
+			yyVAL.Atom = &Atom{false, yyDollar[2].ExprList}
 		}
 	}
 	goto yystack /* stack new state and value */

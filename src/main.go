@@ -43,7 +43,7 @@ func main() {
         )
 
         comast := parse.GetAST(*pr.Run.Command)
-        result := logic.AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
+        result := logic.AST_result(comast.Value.(*parse.ExprList), files_docID, *WordMap)
         fmt.Println("result:", result)
 
         return
@@ -57,7 +57,7 @@ func main() {
             *pr.Interactive.Dirpath,
         )
 
-        var comast *parse.TypeAst
+        var comast *parse.AST
 
         fmt.Println("Enter `quit` for quit")
         fmt.Println("copyleft (C) Peterlits Zo <peterlitszo@outlook.com>")
@@ -74,7 +74,7 @@ func main() {
             // parse the input as a AST
             comast = parse.GetAST(text)
             // use logicer to hold it.
-            result := logic.AST_result(comast.Value.(*parse.TypeList), files_docID, *WordMap)
+            result := logic.AST_result(comast.Value.(*parse.ExprList), files_docID, *WordMap)
             // output the return
             fmt.Println("result:", result)
         }
