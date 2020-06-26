@@ -19,16 +19,18 @@ const (
 )
 
 // the part of parser's type that it want:
+type TypeAst struct {
+    Command string
+    Value interface{}
+}
+
+// if the Command is "sreach"
 type TypeAtom struct {
     Not bool
     Value interface{}
 }
 type TypeExpr []*TypeAtom
 type TypeList []*TypeExpr
-type TypeAst struct {
-    Command string
-    Value interface{}
-}
 
 var ast_result *TypeAst
 
@@ -45,7 +47,7 @@ var ast_result *TypeAst
     Str  string
 }
 
-%token SREACH LIST
+%token SREACH LIST PRINT
 %token AND OR NOT '(' ')'
 %token <Str> STR
 
@@ -66,6 +68,9 @@ ast         : SREACH sreach_word {
             }
             | LIST {
                 $$ = &TypeAst{"list", nil}
+            }
+            | PRINT STR{
+                $$ = &TypeAst{"print", $2}
             }
 
 sreach_word : expr OR sreach_word {
@@ -116,6 +121,8 @@ var re = map[int]*regexp.Regexp{
     SREACH: regexp.MustCompile(`^[sS][rR][eE][aA][cC][hH]`),
     // e.g. list
     LIST:   regexp.MustCompile(`^[lL][iI][sS][tT]`),
+    // e.g print
+    PRINT:  regexp.MustCompile(`^[pP][rR][iI][nN][tT]`),
     // e.g. and, AND, And, &&
     AND:    regexp.MustCompile(`^([aA][nN][dD]|&&)`),
     // e.g. or, OR, Or, ||
@@ -190,7 +197,11 @@ func (l *GoLex) Lex(lval *yySymType) int {
 
         case re[LIST].Match(l.input[l.pos:]):
             l.pos += len(re[LIST].Find(l.input[l.pos:]))
-            return SREACH
+            return LIST
+
+        case re[PRINT].Match(l.input[l.pos:]):
+            l.pos += len(re[LIST].Find(l.input[l.pos:]))
+            return PRINT
 
         case re[AND].Match(l.input[l.pos:]):
             l.pos += len(re[AND].Find(l.input[l.pos:]))

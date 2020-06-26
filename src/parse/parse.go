@@ -25,23 +25,25 @@ const (
 )
 
 // the part of parser's type that it want:
+type TypeAst struct {
+	Command string
+	Value   interface{}
+}
+
+// if the Command is "sreach"
 type TypeAtom struct {
 	Not   bool
 	Value interface{}
 }
 type TypeExpr []*TypeAtom
 type TypeList []*TypeExpr
-type TypeAst struct {
-	Command string
-	Value   interface{}
-}
 
 var ast_result *TypeAst
 
 // ---[ end of source file head ]----------------------------------------------
 // ----------------------------------------------------------------------------
 
-//line ./src/parse/parse.y:40
+//line ./src/parse/parse.y:42
 type yySymType struct {
 	yys  int
 	Atom *TypeAtom
@@ -53,10 +55,11 @@ type yySymType struct {
 
 const SREACH = 57346
 const LIST = 57347
-const AND = 57348
-const OR = 57349
-const NOT = 57350
-const STR = 57351
+const PRINT = 57348
+const AND = 57349
+const OR = 57350
+const NOT = 57351
+const STR = 57352
 
 var yyToknames = [...]string{
 	"$end",
@@ -64,6 +67,7 @@ var yyToknames = [...]string{
 	"$unk",
 	"SREACH",
 	"LIST",
+	"PRINT",
 	"AND",
 	"OR",
 	"NOT",
@@ -77,7 +81,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line ./src/parse/parse.y:107
+//line ./src/parse/parse.y:112
 
 // ----------------------------------------------------------------------------
 // ---[ begin of the tail source file ]----------------------------------------
@@ -90,6 +94,8 @@ var re = map[int]*regexp.Regexp{
 	SREACH: regexp.MustCompile(`^[sS][rR][eE][aA][cC][hH]`),
 	// e.g. list
 	LIST: regexp.MustCompile(`^[lL][iI][sS][tT]`),
+	// e.g print
+	PRINT: regexp.MustCompile(`^[pP][rR][iI][nN][tT]`),
 	// e.g. and, AND, And, &&
 	AND: regexp.MustCompile(`^([aA][nN][dD]|&&)`),
 	// e.g. or, OR, Or, ||
@@ -162,7 +168,11 @@ func (l *GoLex) Lex(lval *yySymType) int {
 
 		case re[LIST].Match(l.input[l.pos:]):
 			l.pos += len(re[LIST].Find(l.input[l.pos:]))
-			return SREACH
+			return LIST
+
+		case re[PRINT].Match(l.input[l.pos:]):
+			l.pos += len(re[LIST].Find(l.input[l.pos:]))
+			return PRINT
 
 		case re[AND].Match(l.input[l.pos:]):
 			l.pos += len(re[AND].Find(l.input[l.pos:]))
@@ -225,44 +235,45 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 20
+const yyLast = 22
 
 var yyAct = [...]int{
 
-	5, 8, 10, 6, 9, 14, 12, 13, 20, 19,
-	11, 15, 16, 3, 4, 18, 17, 1, 7, 2,
+	6, 7, 9, 11, 16, 10, 15, 12, 22, 21,
+	13, 14, 17, 1, 18, 8, 19, 20, 3, 4,
+	5, 2,
 }
 var yyPact = [...]int{
 
-	9, -1000, -1000, -7, -1000, -1000, 3, 0, -4, -1000,
-	-7, -7, -7, -1000, -7, -1, -1000, -1000, -2, -1000,
-	-1000,
+	14, -1000, -1000, -7, -1000, -5, -1000, 2, 4, -6,
+	-1000, -7, -1000, -7, -7, -1000, -7, -2, -1000, -1000,
+	-3, -1000, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 19, 0, 3, 18, 17,
+	0, 21, 0, 1, 15, 13,
 }
 var yyR1 = [...]int{
 
-	0, 5, 1, 1, 2, 2, 3, 3, 4, 4,
-	4, 4,
+	0, 5, 1, 1, 1, 2, 2, 3, 3, 4,
+	4, 4, 4,
 }
 var yyR2 = [...]int{
 
-	0, 1, 2, 1, 3, 1, 3, 1, 2, 1,
-	4, 3,
+	0, 1, 2, 1, 2, 3, 1, 3, 1, 2,
+	1, 4, 3,
 }
 var yyChk = [...]int{
 
-	-1000, -5, -1, 4, 5, -2, -3, -4, 8, 11,
-	9, 7, 6, 11, 9, -2, -2, -3, -2, 10,
-	10,
+	-1000, -5, -1, 4, 5, 6, -2, -3, -4, 9,
+	12, 10, 12, 8, 7, 12, 10, -2, -2, -3,
+	-2, 11, 11,
 }
 var yyDef = [...]int{
 
-	0, -2, 1, 0, 3, 2, 5, 7, 0, 9,
-	0, 0, 0, 8, 0, 0, 4, 6, 0, 11,
-	10,
+	0, -2, 1, 0, 3, 0, 2, 6, 8, 0,
+	10, 0, 4, 0, 0, 9, 0, 0, 5, 7,
+	0, 12, 11,
 }
 var yyTok1 = [...]int{
 
@@ -270,11 +281,11 @@ var yyTok1 = [...]int{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	9, 10,
+	10, 11,
 }
 var yyTok2 = [...]int{
 
-	2, 3, 4, 5, 6, 7, 8, 11,
+	2, 3, 4, 5, 6, 7, 8, 9, 12,
 }
 var yyTok3 = [...]int{
 	0,
@@ -619,73 +630,79 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse/parse.y:60
+//line ./src/parse/parse.y:62
 		{
 			ast_result = yyDollar[1].Ast
 		}
 	case 2:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line ./src/parse/parse.y:64
+//line ./src/parse/parse.y:66
 		{
 			yyVAL.Ast = &TypeAst{"sreach", yyDollar[2].List}
 		}
 	case 3:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse/parse.y:67
+//line ./src/parse/parse.y:69
 		{
 			yyVAL.Ast = &TypeAst{"list", nil}
 		}
 	case 4:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line ./src/parse/parse.y:72
+		{
+			yyVAL.Ast = &TypeAst{"print", yyDollar[2].Str}
+		}
+	case 5:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./src/parse/parse.y:71
+//line ./src/parse/parse.y:76
 		{
 			temp := append(*yyDollar[3].List, yyDollar[1].Expr)
 			yyVAL.List = &temp
 		}
-	case 5:
+	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse/parse.y:75
+//line ./src/parse/parse.y:80
 		{
 			temp := make(TypeList, 0)
 			temp = append(temp, yyDollar[1].Expr)
 			yyVAL.List = &temp
 		}
-	case 6:
+	case 7:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./src/parse/parse.y:82
+//line ./src/parse/parse.y:87
 		{
 			temp := append(*yyDollar[3].Expr, yyDollar[1].Atom)
 			yyVAL.Expr = &temp
 		}
-	case 7:
+	case 8:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse/parse.y:86
+//line ./src/parse/parse.y:91
 		{
 			temp := make(TypeExpr, 0)
 			temp = append(temp, yyDollar[1].Atom)
 			yyVAL.Expr = &temp
 		}
-	case 8:
+	case 9:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line ./src/parse/parse.y:93
+//line ./src/parse/parse.y:98
 		{
 			yyVAL.Atom = &TypeAtom{true, yyDollar[2].Str}
 		}
-	case 9:
+	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse/parse.y:96
+//line ./src/parse/parse.y:101
 		{
 			yyVAL.Atom = &TypeAtom{false, yyDollar[1].Str}
 		}
-	case 10:
+	case 11:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line ./src/parse/parse.y:99
+//line ./src/parse/parse.y:104
 		{
 			yyVAL.Atom = &TypeAtom{true, yyDollar[3].List}
 		}
-	case 11:
+	case 12:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./src/parse/parse.y:102
+//line ./src/parse/parse.y:107
 		{
 			yyVAL.Atom = &TypeAtom{false, yyDollar[2].List}
 		}

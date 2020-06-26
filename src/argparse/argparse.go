@@ -47,10 +47,10 @@ func EastArgparse() (pr ParsErresult) {
     // command
     // the short command usage
     pr.Run.Self = pr.Parser.NewCommand(
-        "Run", "the command to get the ID list (see README.pdf)",
+        "run", "the command to get the ID list (see README.pdf)",
         )
     pr.Run.Useindex = pr.Run.Self.Flag(
-        "u", "UseIndex", &argparse.Options{
+        "u", "useIndex", &argparse.Options{
             Help: "use file 'index.dict' to find result",
         })
     pr.Run.Command = pr.Run.Self.String(
@@ -59,7 +59,7 @@ func EastArgparse() (pr ParsErresult) {
             Help: "the command to Run (see README.pdf for more infos)",
         })
     pr.Run.Dirpath = pr.Run.Self.String(
-        "d", "Dirpath", &argparse.Options{
+        "d", "dirpath", &argparse.Options{
             Required: false,
             Help: "the command to Run (see README.pdf for more infos)",
             Default: "input",
@@ -68,7 +68,7 @@ func EastArgparse() (pr ParsErresult) {
     // Mkindex
     // to make a index file or not
     pr.Mkindex.Self = pr.Parser.NewCommand(
-        "Mkindex", "use this flag to make index named 'index.dict'")
+        "mkindex", "use this flag to make index named 'index.dict'")
     pr.Mkindex.Dirpath = pr.Mkindex.Self.String(
         "d", "Dirpath", &argparse.Options{
             Required: false,
@@ -79,14 +79,14 @@ func EastArgparse() (pr ParsErresult) {
     // Interactive
     // to use Interactive or not
     pr.Interactive.Self = pr.Parser.NewCommand(
-        "Interactive", "make Self under the Interactive mode",
+        "interactive", "make Self under the Interactive mode",
         )
     pr.Interactive.Useindex = pr.Interactive.Self.Flag(
-        "u", "UseIndex", &argparse.Options{
+        "u", "useIndex", &argparse.Options{
             Help: "use file 'index.dict' to find result",
         })
     pr.Interactive.Dirpath = pr.Interactive.Self.String(
-        "d", "Dirpath", &argparse.Options{
+        "d", "dirpath", &argparse.Options{
             Required: false,
             Help: "the command to Run (see README.pdf for more infos)",
             Default: "input",
@@ -95,7 +95,7 @@ func EastArgparse() (pr ParsErresult) {
     // Version
     // to show Self's Version
     pr.Version.Self = pr.Parser.NewCommand(
-        "Version", "Show East's Version")
+        "version", "show east's version")
 
     // parse the argument, and if there is Error, then raise it out
     pr.Err = pr.Parser.Parse(os.Args)
@@ -103,3 +103,4 @@ func EastArgparse() (pr ParsErresult) {
     // return the value
     return
 }
+
