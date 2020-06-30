@@ -13,7 +13,7 @@ import __yyfmt__ "fmt"
 //line ./src/parse/parse.y:7
 
 import (
-	"log"
+	"fmt"
 	"regexp"
 	"unicode"
 	"unicode/utf8"
@@ -203,7 +203,7 @@ func (l *GoLex) Lex(lval *yySymType) int {
 			return int(')')
 
 		default:
-			log.Println("can't match", "\""+string(l.input[l.pos:])+"\"")
+			fmt.Println("        | can't match", "\""+string(l.input[l.pos:])+"\"")
 			return 0
 		}
 	}
@@ -212,7 +212,7 @@ func (l *GoLex) Lex(lval *yySymType) int {
 
 // when l can't match
 func (l *GoLex) Error(s string) {
-	log.Printf("syntax error: %s\n", s)
+	fmt.Printf("        | syntax error: %s\n", s)
 }
 
 // ---[ AST ]------------------------------------------------------------------

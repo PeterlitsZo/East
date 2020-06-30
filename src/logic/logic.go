@@ -10,12 +10,21 @@ import (
 )
 
 func Run(AST *parse.AST, env *units.Env) interface{} {
-    return 0
+    switch AST.Command {
+    case "list":
+        return "list"
+    case "sreach":
+        return "sreach"
+    case "print":
+        return "print"
+    default:
+        return "[Error] Unkown Command"
+    }
 }
 
 // ---[ return bool sreach's result ]------------------------------------------
 // return the AST's result.
-func AST_result(list_ *parse.ExprList, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
+func Sreach_result(list_ *parse.ExprList, all_DocID *units.DocList, wordmap map[string]*units.DocList) *units.DocList {
     result := &units.DocList{}
     // if the list_'s len is zero, then return the full units.DocList
     if list_ == nil || len(*list_) == 0 {
@@ -78,7 +87,7 @@ func ATOM_result(atom *parse.Atom, all_DocID *units.DocList, wordmap map[string]
         }
     case *parse.ExprList:
         sub_ast := atom.Value.(*parse.ExprList)
-        result.Copy(AST_result(sub_ast, all_DocID, wordmap))
+        result.Copy(Sreach_result(sub_ast, all_DocID, wordmap))
     default:
         // TODO: this is not OK( it look ugly )
         fmt.Println("Error! the type is ", reflect.TypeOf(v))

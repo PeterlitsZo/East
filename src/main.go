@@ -76,7 +76,7 @@ func main() {
             // use logicer to hold it.
             result := logic.Run(comast, &units.Env{files_docID, WordMap})
             // output the return
-            fmt.Println("result:", result)
+            fmt.Println("Result  :", result, "\n")
         }
 
     }
