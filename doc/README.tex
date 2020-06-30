@@ -4,6 +4,10 @@
 \hypersetup{hidelinks}
 
 \def\go{GoLang}
+\def\hline{\begingroup
+    \noindent\pltgray\rule{\textwidth}{0.5pt}%
+    \endgroup}
+\def\textline{\hline}
 
 \title{East - 基于LALR、链表和tf-idf的单词搜索}
 \author{周泓余%
@@ -156,23 +160,28 @@ $
 \end{lstlisting}
 
 按照模块化结构，所有的源代码都分工合作，各司其职。分别对他们进行
-短暂描述有：
+短暂描述：
+
+\textline
 
 \begin{description}[labelindent=\parindent]
-    \item[argparse] 解析命令行命令，提供usage提示。
-    \item[list] 提供有序链表的接口。
+    \item[argparse:] 解析命令行命令，提供usage提示。
+    \item[list:] 提供有序链表的接口。
     \item[logic] 实现了底层，如根据抽象出的语法树处理业务
         进行搜索处理。
-    \item[parse] 讲前端的命令处理为抽象语法树。
-    \item[units] 杂项，其他。包含：
+    \item[parse:] 将前端的命令处理为抽象语法树。
+    \item[units:] 杂项。
         \begin{description}
-            \item[file] 提供处理文件的接口。
-            \item[spilt] 提供文本分词的接口，用来见文件转
-                换为数据结构，或者说是index文件的第一步。
-            \item[version] 提供版本信息。
-            \item[wordmap] 抽象出的数据结构。
+            \item[file:] 提供处理文件的接口。
+            \item[spilt:] 提供文本分词的接口，用来将文件转
+                换为数据结构，它是是处理index文件的第一步。
+            \item[version:] 提供版本信息。
+            \item[wordmap:] 抽象出的最主要的数据结构。储存了
+                单词的在文件中出现过的位置。
         \end{description}
 \end{description}
+
+\textline
 
 \subsection{整体逻辑组织}
 
@@ -317,10 +326,6 @@ $
 \pltbar{命令list}{1}{3}
 
 \subsection{版本历史}
-
-\def\hline{\begingroup
-    \noindent\pltgray\rule{\textwidth}{0.5pt}%
-    \endgroup}
 
 0.4.2: 全面更新了文档。使用\LaTeX{}而非\verb|Markdown|来编写文档。
 
