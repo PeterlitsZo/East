@@ -7,7 +7,8 @@ import (
 )
 
 func _getWordMap_raw(files []File) (wordmap *map[string]*DocList) {
-    wordmap = new(map[string]*DocList)
+    wordmap_org := make(map[string]*DocList)
+    wordmap = &wordmap_org
     for _, file := range files {
         // read file
         file_byte, err := ioutil.ReadFile(file.Path)
