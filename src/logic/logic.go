@@ -9,19 +9,30 @@ import (
     "../parse"
 )
 
+type RunResult struct {
+    NeedBreak bool
+    NoOutput  bool
+}
+
 // ---[ return the result of command ]-----------------------------------------
 // it need a AST as a parameter and deal with it and then return the output as
 // a object that can print.
-func Run(AST *parse.AST, env *units.Env) interface{} {
+func Run(AST *parse.AST, env *units.Env) (interface{}, RunResult) {
+    if AST == nil{
+        return "<Error: nil AST>", RunResult{false, true}
+    }
+
     switch AST.Command {
     case "list":
-        return "list"
+        return "list", RunResult{false, false}
     case "sreach":
-        return "sreach"
+        return "sreach", RunResult{false, false}
     case "print":
-        return AST.Value
+        return AST.Value, RunResult{false, false}
+    case "quit":
+        return nil, RunResult{true, true}
     default:
-        return "[Error] Unkown Command"
+        return "[Error] Unkown Command", RunResult{false, false}
     }
 }
 

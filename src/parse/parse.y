@@ -21,12 +21,12 @@ const (
 // the part of parser's type that it want:
 type AST struct {
     Command string
-    Value interface{}
+    Value   interface{}
 }
 
 // if the Command is "sreach"
 type Atom struct {
-    Not bool
+    Not   bool
     Value interface{}
 }
 type Expr []*Atom
@@ -41,11 +41,11 @@ var ast_result *AST
 
 // the part of parser's type that it want:
 %union{
-    Atom *Atom
-    Expr *Expr
+    Atom     *Atom
+    Expr     *Expr
     ExprList *ExprList
-    AST  *AST
-    Str  string
+    AST      *AST
+    Str      string
 }
 
 %token SREACH LIST PRINT
@@ -200,7 +200,7 @@ func (l *GoLex) Lex(lval *yySymType) int {
             return LIST
 
         case re[PRINT].Match(l.input[l.pos:]):
-            l.pos += len(re[LIST].Find(l.input[l.pos:]))
+            l.pos += len(re[PRINT].Find(l.input[l.pos:]))
             return PRINT
 
         case re[AND].Match(l.input[l.pos:]):
@@ -245,7 +245,7 @@ func (l *GoLex) Error(s string) {
 
 // ---[ AST ]------------------------------------------------------------------
 
-// from a string to build a AST( if s is empty then return a nil pointer )
+// from a string to build a AST( if is is empty then return a nil pointer )
 func GetAST(s string) *AST {
     if s == "" {
         return nil

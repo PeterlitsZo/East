@@ -36,6 +36,8 @@ func _getWordMap_raw(files []File) (wordmap *map[string]*DocList) {
 
 
 func _getWordMap_fromIndex(file string) (wordmap *map[string]*DocList) {
+    wordmap_org := make(map[string]*DocList)
+    wordmap = &wordmap_org
     // read file
     index_byte, err := ioutil.ReadFile(file)
     if err != nil {

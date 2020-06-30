@@ -43,7 +43,7 @@ func main() {
         )
 
         comast := parse.GetAST(*pr.Run.Command)
-        result := logic.Run(comast, &units.Env{files_docID, WordMap})
+        result, _ := logic.Run(comast, &units.Env{files_docID, WordMap})
         fmt.Println("result:", result)
 
         return
@@ -74,9 +74,13 @@ func main() {
             // parse the input as a AST
             comast = parse.GetAST(text)
             // use logicer to hold it.
-            result := logic.Run(comast, &units.Env{files_docID, WordMap})
+            result, runresult := logic.Run(comast, &units.Env{files_docID, WordMap})
             // output the return
             fmt.Println("Result  :", result, "\n")
+
+            if runresult.NeedBreak {
+                break
+            }
         }
 
     }
