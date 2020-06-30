@@ -18,7 +18,7 @@ func main() {
     pr := argparse.EastArgparse()
 
     // if East raise the error, then putout the usage
-    if pr.Err != nil && pr.Err.Error() != "[sub]Command required\n" {
+    if pr.Err != nil {
         fmt.Println(pr.Parser.Usage(pr.Err))
         return
 
@@ -49,7 +49,7 @@ func main() {
         return
 
     // if it need to get into interactive mode, then make it
-    } else if pr.Interactive.Self.Happened() || pr.Err.Error() == "[sub]Command required\n" {
+    } else if pr.Interactive.Self.Happened() {
         WordMap, files_docID := units.GetWordMap(
             // need index file?
             *pr.Interactive.Useindex,

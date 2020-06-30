@@ -9,6 +9,9 @@ import (
     "../parse"
 )
 
+// ---[ return the result of command ]-----------------------------------------
+// it need a AST as a parameter and deal with it and then return the output as
+// a object that can print.
 func Run(AST *parse.AST, env *units.Env) interface{} {
     switch AST.Command {
     case "list":
@@ -16,7 +19,7 @@ func Run(AST *parse.AST, env *units.Env) interface{} {
     case "sreach":
         return "sreach"
     case "print":
-        return "print"
+        return AST.Value
     default:
         return "[Error] Unkown Command"
     }

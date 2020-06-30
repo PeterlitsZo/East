@@ -70,7 +70,7 @@ func GetWordMap(useindex bool, dirpath string) (
 		var err error
 		files, files_docID, err = GetFiles(dirpath)
 		if err != nil {
-			fmt.Println("[ERROR]:", err)
+			fmt.Println("[ERROR]", err)
 		}
 
 		WordMap = _getWordMap_raw(files)

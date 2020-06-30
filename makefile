@@ -16,6 +16,10 @@ main: $(SRC) $(UNITS) $(PARSE) $(ARGPARSE) $(LOGIC)
 	goyacc -o ./src/parse/parse.go ./src/parse/parse.y
 	rm y.output
 
+.PHONY: run
+run: $(PARSE)
+	go run ./src interactive
+
 .PHONY: doc
 doc: $(DOC)
 	cd ./doc && lualatex ./README.tex && mv ./README.pdf ..

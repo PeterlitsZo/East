@@ -29,7 +29,7 @@ type ParserVersion struct {
 }
 
 
-type ParsErresult struct {
+type ParserResult struct {
     Parser       *argparse.Parser
     Run          ParserRun
     Mkindex      ParserMkindex
@@ -39,7 +39,7 @@ type ParsErresult struct {
 }
 
 
-func EastArgparse() (pr ParsErresult) {
+func EastArgparse() (pr ParserResult) {
     // ---[ parse args ]-------------------------------------------------------
 
     pr.Parser = argparse.NewParser("East", "sreach engine on file system")
