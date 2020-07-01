@@ -18,7 +18,8 @@ main: $(SRC) $(UNITS) $(PARSE) $(ARGPARSE) $(LOGIC)
 
 .PHONY: run
 run: $(PARSE)
-	go run ./src interactive
+	@echo "------------------------------------------------"
+	@go run ./src interactive
 
 .PHONY: doc
 doc: $(DOC)

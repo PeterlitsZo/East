@@ -76,6 +76,9 @@ ast         : SREACH sreach_word {
             | QUIT {
                 $$ = &AST{"quit", nil}
             }
+            | {
+                $$ = &AST{"empty", nil}
+            }
 
 sreach_word : expr OR sreach_word {
                 temp := append( *$3, $1 )
@@ -252,7 +255,7 @@ func (l *GoLex) Lex(lval *yySymType) int {
             return int(')')
 
         default:
-            fmt.Println("        | can't match", "\"" + string(l.input[l.pos:]) + "\"")
+            fmt.Printf("        | can't match %#v\n", string(l.input[l.pos:]))
             return 0
         }
     }

@@ -86,7 +86,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line ./src/parse/parse.y:116
+//line ./src/parse/parse.y:119
 
 // ----------------------------------------------------------------------------
 // ---[ begin of the tail source file ]----------------------------------------
@@ -221,7 +221,7 @@ func (l *GoLex) Lex(lval *yySymType) int {
 			return int(')')
 
 		default:
-			fmt.Println("        | can't match", "\""+string(l.input[l.pos:])+"\"")
+			fmt.Printf("        | can't match %#v\n", string(l.input[l.pos:]))
 			return 0
 		}
 	}
@@ -274,13 +274,13 @@ var yyPgo = [...]int{
 }
 var yyR1 = [...]int{
 
-	0, 5, 1, 1, 1, 1, 2, 2, 3, 3,
-	4, 4, 4, 4,
+	0, 5, 1, 1, 1, 1, 1, 2, 2, 3,
+	3, 4, 4, 4, 4,
 }
 var yyR2 = [...]int{
 
-	0, 2, 2, 1, 2, 1, 3, 1, 3, 1,
-	2, 1, 4, 3,
+	0, 2, 2, 1, 2, 1, 0, 3, 1, 3,
+	1, 2, 1, 4, 3,
 }
 var yyChk = [...]int{
 
@@ -290,9 +290,9 @@ var yyChk = [...]int{
 }
 var yyDef = [...]int{
 
-	0, -2, 0, 0, 3, 0, 5, 1, 2, 7,
-	9, 0, 11, 0, 4, 0, 0, 10, 0, 0,
-	6, 8, 0, 13, 12,
+	6, -2, 0, 0, 3, 0, 5, 1, 2, 8,
+	10, 0, 12, 0, 4, 0, 0, 11, 0, 0,
+	7, 9, 0, 14, 13,
 }
 var yyTok1 = [...]int{
 
@@ -679,56 +679,62 @@ yydefault:
 			yyVAL.AST = &AST{"quit", nil}
 		}
 	case 6:
+		yyDollar = yyS[yypt-0 : yypt+1]
+//line ./src/parse/parse.y:79
+		{
+			yyVAL.AST = &AST{"empty", nil}
+		}
+	case 7:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./src/parse/parse.y:80
+//line ./src/parse/parse.y:83
 		{
 			temp := append(*yyDollar[3].ExprList, yyDollar[1].Expr)
 			yyVAL.ExprList = &temp
 		}
-	case 7:
+	case 8:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse/parse.y:84
+//line ./src/parse/parse.y:87
 		{
 			temp := make(ExprList, 0)
 			temp = append(temp, yyDollar[1].Expr)
 			yyVAL.ExprList = &temp
 		}
-	case 8:
+	case 9:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./src/parse/parse.y:91
+//line ./src/parse/parse.y:94
 		{
 			temp := append(*yyDollar[3].Expr, yyDollar[1].Atom)
 			yyVAL.Expr = &temp
 		}
-	case 9:
+	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse/parse.y:95
+//line ./src/parse/parse.y:98
 		{
 			temp := make(Expr, 0)
 			temp = append(temp, yyDollar[1].Atom)
 			yyVAL.Expr = &temp
 		}
-	case 10:
+	case 11:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line ./src/parse/parse.y:102
+//line ./src/parse/parse.y:105
 		{
 			yyVAL.Atom = &Atom{true, yyDollar[2].Str}
 		}
-	case 11:
+	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./src/parse/parse.y:105
+//line ./src/parse/parse.y:108
 		{
 			yyVAL.Atom = &Atom{false, yyDollar[1].Str}
 		}
-	case 12:
+	case 13:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line ./src/parse/parse.y:108
+//line ./src/parse/parse.y:111
 		{
 			yyVAL.Atom = &Atom{true, yyDollar[3].ExprList}
 		}
-	case 13:
+	case 14:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./src/parse/parse.y:111
+//line ./src/parse/parse.y:114
 		{
 			yyVAL.Atom = &Atom{false, yyDollar[2].ExprList}
 		}
