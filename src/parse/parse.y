@@ -50,7 +50,7 @@ var ast_result *AST
 
 %token SREACH LIST PRINT QUIT
 
-%token AND OR NOT '(' ')'
+%token AND OR NOT '(' ')' NEWLINE
 %token <Str> STR
 
 %type  <AST>  ast
@@ -60,7 +60,7 @@ var ast_result *AST
 
 %%
 
-top         : ast {
+top         : ast NEWLINE {
                 ast_result = $1
             }
 
@@ -70,7 +70,7 @@ ast         : SREACH sreach_word {
             | LIST {
                 $$ = &AST{"list", nil}
             }
-            | PRINT STR{
+            | PRINT STR {
                 $$ = &AST{"print", $2}
             }
             | QUIT {
@@ -121,23 +121,26 @@ atom        : NOT STR {
 
 // the regex machine
 var re = map[int]*regexp.Regexp{
-    // e.g. sreach, Sreach, SREACH
-    SREACH: regexp.MustCompile(`^[sS][rR][eE][aA][cC][hH]`),
-    // e.g. list, List, LIST
-    LIST:   regexp.MustCompile(`^[lL][iI][sS][tT]`),
-    // e.g print, Print, PRINT
-    PRINT:  regexp.MustCompile(`^[pP][rR][iI][nN][tT]`),
-    // e.g quit, Quit, QUIT
-    QUIT:   regexp.MustCompile(`^[qQ][uU][iI][tT]`),
+    // e.g.  sreach, Sreach, SREACH
+    SREACH:  regexp.MustCompile(`^[sS][rR][eE][aA][cC][hH]`),
+    // e.g.  list, List, LIST
+    LIST:    regexp.MustCompile(`^[lL][iI][sS][tT]`),
+    // e.g   print, Print, PRINT
+    PRINT:   regexp.MustCompile(`^[pP][rR][iI][nN][tT]`),
+    // e.g   quit, Quit, QUIT
+    QUIT:    regexp.MustCompile(`^[qQ][uU][iI][tT]`),
 
-    // e.g. and, AND, And, &&
-    AND:    regexp.MustCompile(`^([aA][nN][dD]|&&)`),
-    // e.g. or, OR, Or, ||
-    OR:     regexp.MustCompile(`^([oO][rR]|\|\|)`),
-    // e.g. not NOT, Not, !
-    NOT:    regexp.MustCompile(`^([nN][oO][tT]|!)`),
-    // e.g. "PETER", "\"", '\'', '"'
-    STR:    regexp.MustCompile(`^("(\\"|[^"])*"|'(\\'|[^'])*')`),
+    // e.g.  and, AND, And, &&
+    AND:     regexp.MustCompile(`^([aA][nN][dD]|&&)`),
+    // e.g.  or, OR, Or, ||
+    OR:      regexp.MustCompile(`^([oO][rR]|\|\|)`),
+    // e.g.  not NOT, Not, !
+    NOT:     regexp.MustCompile(`^([nN][oO][tT]|!)`),
+    // e.g.  "PETER", "\"", '\'', '"'
+    STR:     regexp.MustCompile(`^("(\\"|[^"])*"|'(\\'|[^'])*')`),
+
+    // e.g. \n
+    NEWLINE: regexp.MustCompile(`^(\n)`),
 }
 
 // the struct of input (member input is the string of its input)
@@ -189,11 +192,11 @@ func getstring(org string) string {
 //     l(type: *GoLex): the input string(and a interger `pos` to remember its
 // position
 func (l *GoLex) Lex(lval *yySymType) int {
-    for l.pos < len(l.input){
+    for l.pos < len(l.input) {
         // get the next Rune(part of string) and its length
         r, n := utf8.DecodeRune(l.input[l.pos:])
         // if it is a space, then skip it.
-        if unicode.IsSpace(r) {
+        if unicode.IsSpace(r) && r != '\n' {
             l.pos += n
             continue
         }
@@ -233,6 +236,12 @@ func (l *GoLex) Lex(lval *yySymType) int {
             // let itself has the value that it want.
             lval.Str = getstring(string(str_result))
             return STR
+
+
+        case re[NEWLINE].Match(l.input[l.pos:]):
+            l.pos += len(re[NEWLINE].Find(l.input[l.pos:]))
+            return NEWLINE
+
 
         case string(l.input[l.pos:l.pos+1]) == "(":
             l.pos += len("(")

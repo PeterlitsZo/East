@@ -2,7 +2,6 @@ package main
 
 import (
     "fmt"
-    "strings"
     "bufio"
     "os"
 
@@ -42,7 +41,7 @@ func main() {
             *pr.Run.Dirpath,
         )
 
-        comast := parse.GetAST(*pr.Run.Command)
+        comast := parse.GetAST(*pr.Run.Command + "\n")
         result, runresult := logic.Run(comast, &units.Env{files_docID, WordMap})
         // output the return
         if !runresult.NoOutput {
@@ -70,7 +69,6 @@ func main() {
             reader := bufio.NewReader(os.Stdin)
             fmt.Print("Command > ")
             text, _ := reader.ReadString('\n')
-            text = strings.Replace(text, "\n", "", -1)
             // parse the input as a AST
             comast = parse.GetAST(text)
             // use logicer to hold it.

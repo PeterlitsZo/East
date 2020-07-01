@@ -61,7 +61,8 @@ const QUIT = 57349
 const AND = 57350
 const OR = 57351
 const NOT = 57352
-const STR = 57353
+const NEWLINE = 57353
+const STR = 57354
 
 var yyToknames = [...]string{
 	"$end",
@@ -76,6 +77,7 @@ var yyToknames = [...]string{
 	"NOT",
 	"'('",
 	"')'",
+	"NEWLINE",
 	"STR",
 }
 var yyStatenames = [...]string{}
@@ -93,23 +95,26 @@ const yyInitialStackSize = 16
 
 // the regex machine
 var re = map[int]*regexp.Regexp{
-	// e.g. sreach, Sreach, SREACH
+	// e.g.  sreach, Sreach, SREACH
 	SREACH: regexp.MustCompile(`^[sS][rR][eE][aA][cC][hH]`),
-	// e.g. list, List, LIST
+	// e.g.  list, List, LIST
 	LIST: regexp.MustCompile(`^[lL][iI][sS][tT]`),
-	// e.g print, Print, PRINT
+	// e.g   print, Print, PRINT
 	PRINT: regexp.MustCompile(`^[pP][rR][iI][nN][tT]`),
-	// e.g quit, Quit, QUIT
+	// e.g   quit, Quit, QUIT
 	QUIT: regexp.MustCompile(`^[qQ][uU][iI][tT]`),
 
-	// e.g. and, AND, And, &&
+	// e.g.  and, AND, And, &&
 	AND: regexp.MustCompile(`^([aA][nN][dD]|&&)`),
-	// e.g. or, OR, Or, ||
+	// e.g.  or, OR, Or, ||
 	OR: regexp.MustCompile(`^([oO][rR]|\|\|)`),
-	// e.g. not NOT, Not, !
+	// e.g.  not NOT, Not, !
 	NOT: regexp.MustCompile(`^([nN][oO][tT]|!)`),
-	// e.g. "PETER", "\"", '\'', '"'
+	// e.g.  "PETER", "\"", '\'', '"'
 	STR: regexp.MustCompile(`^("(\\"|[^"])*"|'(\\'|[^'])*')`),
+
+	// e.g. \n
+	NEWLINE: regexp.MustCompile(`^(\n)`),
 }
 
 // the struct of input (member input is the string of its input)
@@ -163,7 +168,7 @@ func (l *GoLex) Lex(lval *yySymType) int {
 		// get the next Rune(part of string) and its length
 		r, n := utf8.DecodeRune(l.input[l.pos:])
 		// if it is a space, then skip it.
-		if unicode.IsSpace(r) {
+		if unicode.IsSpace(r) && r != '\n' {
 			l.pos += n
 			continue
 		}
@@ -202,6 +207,10 @@ func (l *GoLex) Lex(lval *yySymType) int {
 			// let itself has the value that it want.
 			lval.Str = getstring(string(str_result))
 			return STR
+
+		case re[NEWLINE].Match(l.input[l.pos:]):
+			l.pos += len(re[NEWLINE].Find(l.input[l.pos:]))
+			return NEWLINE
 
 		case string(l.input[l.pos:l.pos+1]) == "(":
 			l.pos += len("(")
@@ -245,23 +254,23 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 23
+const yyLast = 24
 
 var yyAct = [...]int{
 
-	7, 8, 10, 12, 17, 11, 16, 13, 23, 22,
-	14, 15, 1, 18, 9, 19, 2, 20, 21, 3,
-	4, 5, 6,
+	8, 9, 11, 13, 18, 14, 12, 17, 7, 24,
+	23, 15, 16, 1, 19, 10, 20, 2, 21, 22,
+	3, 4, 5, 6,
 }
 var yyPact = [...]int{
 
-	15, -1000, -1000, -8, -1000, -6, -1000, -1000, 1, 3,
-	-7, -1000, -8, -1000, -8, -8, -1000, -8, -3, -1000,
-	-1000, -4, -1000, -1000,
+	16, -1000, -5, -8, -1000, -9, -1000, -1000, -1000, 2,
+	4, -7, -1000, -8, -1000, -8, -8, -1000, -8, -2,
+	-1000, -1000, -3, -1000, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 16, 0, 1, 14, 12,
+	0, 17, 0, 1, 15, 13,
 }
 var yyR1 = [...]int{
 
@@ -270,20 +279,20 @@ var yyR1 = [...]int{
 }
 var yyR2 = [...]int{
 
-	0, 1, 2, 1, 2, 1, 3, 1, 3, 1,
+	0, 2, 2, 1, 2, 1, 3, 1, 3, 1,
 	2, 1, 4, 3,
 }
 var yyChk = [...]int{
 
-	-1000, -5, -1, 4, 5, 6, 7, -2, -3, -4,
-	10, 13, 11, 13, 9, 8, 13, 11, -2, -2,
-	-3, -2, 12, 12,
+	-1000, -5, -1, 4, 5, 6, 7, 13, -2, -3,
+	-4, 10, 14, 11, 14, 9, 8, 14, 11, -2,
+	-2, -3, -2, 12, 12,
 }
 var yyDef = [...]int{
 
-	0, -2, 1, 0, 3, 0, 5, 2, 7, 9,
-	0, 11, 0, 4, 0, 0, 10, 0, 0, 6,
-	8, 0, 13, 12,
+	0, -2, 0, 0, 3, 0, 5, 1, 2, 7,
+	9, 0, 11, 0, 4, 0, 0, 10, 0, 0,
+	6, 8, 0, 13, 12,
 }
 var yyTok1 = [...]int{
 
@@ -296,6 +305,7 @@ var yyTok1 = [...]int{
 var yyTok2 = [...]int{
 
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 13,
+	14,
 }
 var yyTok3 = [...]int{
 	0,
@@ -639,7 +649,7 @@ yydefault:
 	switch yynt {
 
 	case 1:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-2 : yypt+1]
 //line ./src/parse/parse.y:63
 		{
 			ast_result = yyDollar[1].AST
