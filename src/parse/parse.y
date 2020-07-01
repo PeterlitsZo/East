@@ -48,7 +48,8 @@ var ast_result *AST
     Str      string
 }
 
-%token SREACH LIST PRINT
+%token SREACH LIST PRINT QUIT
+
 %token AND OR NOT '(' ')'
 %token <Str> STR
 
@@ -71,6 +72,9 @@ ast         : SREACH sreach_word {
             }
             | PRINT STR{
                 $$ = &AST{"print", $2}
+            }
+            | QUIT {
+                $$ = &AST{"quit", nil}
             }
 
 sreach_word : expr OR sreach_word {
@@ -119,10 +123,13 @@ atom        : NOT STR {
 var re = map[int]*regexp.Regexp{
     // e.g. sreach, Sreach, SREACH
     SREACH: regexp.MustCompile(`^[sS][rR][eE][aA][cC][hH]`),
-    // e.g. list
+    // e.g. list, List, LIST
     LIST:   regexp.MustCompile(`^[lL][iI][sS][tT]`),
-    // e.g print
+    // e.g print, Print, PRINT
     PRINT:  regexp.MustCompile(`^[pP][rR][iI][nN][tT]`),
+    // e.g quit, Quit, QUIT
+    QUIT:   regexp.MustCompile(`^[qQ][uU][iI][tT]`),
+
     // e.g. and, AND, And, &&
     AND:    regexp.MustCompile(`^([aA][nN][dD]|&&)`),
     // e.g. or, OR, Or, ||
@@ -202,6 +209,11 @@ func (l *GoLex) Lex(lval *yySymType) int {
         case re[PRINT].Match(l.input[l.pos:]):
             l.pos += len(re[PRINT].Find(l.input[l.pos:]))
             return PRINT
+
+        case re[QUIT].Match(l.input[l.pos:]):
+            l.pos += len(re[QUIT].Find(l.input[l.pos:]))
+            return QUIT
+
 
         case re[AND].Match(l.input[l.pos:]):
             l.pos += len(re[AND].Find(l.input[l.pos:]))

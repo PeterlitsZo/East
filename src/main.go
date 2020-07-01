@@ -68,16 +68,14 @@ func main() {
             fmt.Print("Command > ")
             text, _ := reader.ReadString('\n')
             text = strings.Replace(text, "\n", "", -1)
-            if text == "quit" {
-                return
-            }
             // parse the input as a AST
             comast = parse.GetAST(text)
             // use logicer to hold it.
             result, runresult := logic.Run(comast, &units.Env{files_docID, WordMap})
             // output the return
+            if !runresult.NoOutput {
             fmt.Println("Result  :", result, "\n")
-
+            }
             if runresult.NeedBreak {
                 break
             }

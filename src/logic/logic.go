@@ -18,21 +18,45 @@ type RunResult struct {
 // it need a AST as a parameter and deal with it and then return the output as
 // a object that can print.
 func Run(AST *parse.AST, env *units.Env) (interface{}, RunResult) {
+    // if the AST is a nil pointer, it is a error pointer.
     if AST == nil{
-        return "<Error: nil AST>", RunResult{false, true}
+        return "<Error: nil AST>", RunResult{
+            NeedBreak: false,
+            NoOutput: true,
+        }
     }
 
+    // switch by the first part -- AST.Command
     switch AST.Command {
     case "list":
-        return "list", RunResult{false, false}
+        return "list", RunResult{
+            NeedBreak: false,
+            NoOutput: false,
+        }
+
     case "sreach":
-        return "sreach", RunResult{false, false}
+        return "sreach", RunResult{
+            NeedBreak: false,
+            NoOutput: false,
+        }
+
     case "print":
-        return AST.Value, RunResult{false, false}
+        return AST.Value, RunResult{
+            NeedBreak: false,
+            NoOutput: false,
+        }
+
     case "quit":
-        return nil, RunResult{true, true}
+        return nil, RunResult{
+            NeedBreak: true,
+            NoOutput: true,
+        }
+
     default:
-        return "[Error] Unkown Command", RunResult{false, false}
+        return "<Error: Unkown Command>", RunResult{
+            NeedBreak: false,
+            NoOutput: false,
+        }
     }
 }
 
