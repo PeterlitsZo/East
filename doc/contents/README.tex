@@ -1,0 +1,368 @@
+\documentclass{peterlitsdoc}
+
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+
+\def\go{GoLang}
+\def\hline{\begingroup
+    \noindent\pltgray\rule{\textwidth}{0.5pt}%
+    \endgroup}
+\def\textline{\hline}
+
+\title{East - 基于LALR、链表和tf-idf的单词搜索}
+\author{周泓余%
+    \thanks{邮箱：\href{mailto:peterlitszo@outlook.com}
+                       {<peterlitszo@outlook.com>}}%
+    }
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{版本}
+
+当前版本为：
+\begin{lstlisting}
+version 0.4.2
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{部署与使用}
+
+\subsection{部署}
+
+请按照：
+\begin{lstlisting}
+$ go get -u -v github.com/PeterlitsZo/argparse
+$ go build -o main ./src
+\end{lstlisting}
+
+或者：（如果在Linux环境下推荐使用）
+\begin{lstlisting}
+$ make init
+$ make
+\end{lstlisting}
+
+进行编译。因为本软件是基于Goolge开发的开源语言\go 编写而成，使用
+前需要安装\go 的编译器。\go 语言是一门比较小众的语言，所以如果没有
+该编译器的话，还请进入\url{https://golang.org/dl/}下载。
+
+输入命令\verb|./main version|来检查是否部署成功。如果部署成功，则会出现
+如下的信息：
+\begin{lstlisting}
+$ ./main version
+East version 0.4.x
+$
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{入门}
+
+\subsubsection{主要命令}
+
+编译完成后，输入下命令可以得到主要用法：
+\begin{lstlisting}
+$ ./main --help
+usage: East <Command> [-h|--help]
+description:
+  sreach engine on file system
+commands:
+  run          the command to get the ID list (see README.pdf)
+  mkindex      use this flag to make index named 'index.dict'
+  interactive  make Self under the Interactive mode
+  version      Show East's Version
+arguments:
+  -h, --help  Print help information
+$
+\end{lstlisting}
+
+通过\verb|mkindex|命令可以为\verb|dirpath|文件夹（默认值为``input''，但可以根
+据\verb|--dirpath|来进行修改）生成引索，然后通过\verb|--useindex|来让其
+它命令使用引索文件。如果没有\verb|--useindex|命令，则会动态遍历
+文件夹，分词，以哈希表加链表作为数据结构（当然，使用引索文件的
+话，虽然不需要遍历分词，但是还是需要抽象成数据结构）。
+
+最后使用\verb|run|命令或者进入\verb|interactive|模式来完成主要目标：检索。
+语法见后文。
+
+\subsubsection{检索语言}
+
+这一次选择使用\verb|goyacc|工具来生成相应的LALR解析器源码，我首先实现了
+一个分词器，然后编写BNF式的语法规则，构建了解析器\verb|parse.y|。
+
+语法规则如下：
+\begin{lstlisting}
+<ast>          ::= SREACH <sreach_word>
+                |  LIST
+<sreach_word>  ::= <expr> OR <sreach_word>
+                |  <expr>
+<expr>         ::= <atom> AND <expr>
+                |  <atom>
+<atom>         ::= NOT STR
+                |  STR
+                |  NOT '(' <sreach_word> ')'
+                |  '(' <sreach_word> ')'
+\end{lstlisting}
+
+实例：
+\begin{lstlisting}
+1. sreach 'in' AND NOT 'in' OR 'her'
+2. sreach "'" or not '"'
+3. sreach 'outside' && !'inside'
+4. sreach (('that' or !'that') and 'that')
+\end{lstlisting}
+
+如实例所述，STR字符串是由单引号或者双引号包裹而成，支持为单引号或
+者双引号转义（其实在命令行结构下本身就需要对引号进行转义，所以难免
+会发生二次转义，比如\verb|--command="'\\\''"|这样比较丑陋的语法）。
+
+不过现在甚至可以在交互模式下使用了。使用\verb|-interactive|进入交互模式
+，然后在交互下输入命令，就算是同时使用单引号和双引号也轻轻松松、再
+也不用担心二次转义啦（看到就是赚到）。
+
+而AND，OR，NOT不仅仅支持单词（忽略大小写）样式，还支持C式的逻辑
+运算符，也就是说\verb|&&|，\verb-||-和\verb|!|这三个传统命令。
+
+现在还支持括号来实现更加高级的操作了。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{设计与框架}
+
+\subsection{源代码组织}
+
+总体来说，所有源代码都在\verb|src|文件夹下，为：
+\begin{lstlisting}
+./src
+|-- argparse
+|   `-- argparse.go
+|-- list
+|   `-- list.go
+|-- logic
+|   `-- logic.go
+|-- main.go
+|-- parse
+|   |-- parse.go
+|   `-- parse.y
+`-- units
+    |-- file.go
+    |-- split.go
+    |-- version.go
+    `-- wordmap.go
+
+5 directories, 10 files
+\end{lstlisting}
+
+按照模块化结构，所有的源代码都分工合作，各司其职。分别对他们进行
+短暂描述：
+
+\textline
+
+\begin{description}[labelindent=\parindent]
+    \item[argparse:] 解析命令行命令，提供usage提示。
+    \item[list:] 提供有序链表的接口。
+    \item[logic] 实现了底层，如根据抽象出的语法树处理业务
+        进行搜索处理。
+    \item[parse:] 将前端的命令处理为抽象语法树。
+    \item[units:] 杂项。
+        \begin{description}
+            \item[file:] 提供处理文件的接口。
+            \item[spilt:] 提供文本分词的接口，用来将文件转
+                换为数据结构，它是是处理index文件的第一步。
+            \item[version:] 提供版本信息。
+            \item[wordmap:] 抽象出的最主要的数据结构。储存了
+                单词的在文件中出现过的位置。
+        \end{description}
+\end{description}
+
+\textline
+
+\subsection{整体逻辑组织}
+
+整体上来说逻辑分层，分别分为I/O层，Mid层\footnote{用来处理大部分
+逻辑，包括，处理从I/O中传入的数据，使用Low层作为工具进行逻辑处理，
+返回Low层数据结构}，Low层\footnote{定义和抽象绝大多数的数据结构。}%
+和Sys层\footnote{如内存管理等等。使用\go 语言操控，并没有实际接触。}。
+大体来说，整体的逻辑组织结构如图\ref{struct}。
+
+\begin{figure}[H]
+\centering
+\tikzstyle{outer} = [rectangle, draw=black!50, fill=black!20, thick,
+                     minimum size=6mm, minimum width=10em, rounded corners]
+\tikzstyle{inter} = [rectangle, draw=blue!50, fill=blue!20, thick,
+                     minimum size=6mm, minimum width=10em, rounded corners]
+\tikzstyle{labal} = [auto, swap, align = left]
+\tikzstyle{biglabel} = [align = right, left]
+\tikzstyle{bigline} = [very thick, black!50]
+\setlength{\fboxsep}{1em}
+\footnotesize
+\fbox{%
+\begin{tikzpicture}
+    \setlength{\baselineskip}{0.8\baselineskip}
+    \node (command)   at (5.5em, 0)          [outer, minimum width = 21em] {Input};
+    \node (screen)    at (22em, 0)           [outer] {Output};
+    \node (argparse)  at (5.5em, -3.5em)     [inter, minimum width = 21em] {ArgParser}
+          edge [<-] node[labal] {East argument commands} (command);
+    \node (parser)    at (0, -8em)           [inter] {Parser}
+          edge [<-] node[labal] {East standard\\commands} (argparse.south -| parser);
+    \node (logicer)   at (0, -11.5em)        [inter] {Logicer}
+          edge [<-] node[labal] {AST} (parser);
+    \node (low level) at (11em, -15em)       [inter, minimum width = 32em]
+                                             {Data Struct, Help function/method, Etc.}
+          edge [<-] node[labal] {East standard\\function/method}
+                                             (argparse.south -| low level)
+          (low level.north -| logicer) edge [<->] node[labal] {East data struct} (logicer)
+          (low level.north -| screen) edge [->] node[labal] {Output\\string} (screen);
+    \node (system)    at (11em, -18.5em)     [outer, minimum width = 32em] {System}
+          edge [<->] node[labal] {\go} (low level);
+
+    \node (IO)  at (-7.5em, 0)       [biglabel] {I/O};
+    \node (Mid) at (-7.5em, -7.5em)  [biglabel] {Mid};
+    \node (Low) at (-7.5em, -15em)   [biglabel] {Low};
+    \node (Sys) at (-7.5em, -18.5em) [biglabel] {Sys};
+
+    \draw [bigline] (command.north -| -7em, 0)   -- (command.south -| -7em, 0);
+    \draw [bigline, blue!50] (argparse.north -| -7em, 0)  -- (logicer.south -| -7em, 0);
+    \draw [bigline, blue!50] (low level.north -| -7em, 0) -- (low level.south -| -7em, 0);
+    \draw [bigline] (system.north -| -7em, 0)    -- (system.south -| -7em, 0);
+\end{tikzpicture}
+}
+\caption{the struct of East}
+\label{struct}
+\end{figure}
+
+\subsection{逻辑结构细节}
+
+为了处理好tf-idf的逻辑细节，我认为，需要一下几点：讲一个文件处理
+为一个数组，然后再通过数组构建出初步的词典。将它，和运算后的df处
+理好之后，就是一个成熟的解决方案了。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{示例}
+
+[ 需要更新 ]
+
+\begin{lstlisting}
+$ # ---[ build itself ]------------------------------------------
+$
+$ go build -o main ./src
+$ ./main --help
+usage: East [-h|--help] [-d|--dirpath "<value>"] [-c|--command "<value>"]
+            [-m|--mkindex] [-u|--useindex] [-i|--interactive]
+
+            sreach engine on file system
+
+Arguments:
+
+  -h  --help         Print help information
+  -d  --dirpath      the input files' folder path. Default: input
+  -c  --command      the command to get the ID list (see README.pdf). Default: 
+  -m  --mkindex      use this flag to make index named 'index.dict'
+  -u  --useindex     use file 'index.dict' to find result
+  -i  --interactive  make self under the interactive mode
+$
+$ # ---[ a little test using `-command` ]------------------------
+$
+$ ./main --command="'in' || 'not'"
+result: [ d01.txt, d10.txt, d02.txt, d03.txt, d04.txt, d06.txt, d07.txt, d08.txt, d09.txt ]
+$
+$ # -[ use flag `-mkindex` and `useindex` to hold the result ]---
+$
+$ ls
+README.md
+README.pdf
+input
+main
+make.sh
+src
+$
+$ ./main --mkindex
+$
+$ ls # it will make a new file named index.dict
+README.md
+README.pdf
+index.dict
+input
+main
+make.sh
+src
+$
+$ ./main --useindex --command="not 'in'"
+result: [ d5.txt ]
+$
+$ ---[ the interactive mode ]------------------------------------
+$
+$ ./main --useindex --interactive
+Enter `quit` for quit
+copyleft (C) Peterlits Zo <peterlitszo@outlook.com>
+Github: github.com/PeterlitsZo
+
+Command > "that" and 'peter'
+result: [ ]
+Command > 'that' and ('peter' or !'peter')
+result: [ d06.txt, d07.txt ]
+Command > quit
+$ 
+$ 
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{TODO、版本历史等辅助信息}
+
+\subsection{ToDo}
+\begin{plttodoenv}{1}
+    \t[ ] 有什么办法可以来一键安装\verb|GoLang|的依赖吗？
+    \t[ ] 更加详细的，函数式的结构。
+    \t[ ] 可以储存index的信息。
+    \t[ ] 命令\verb|useindex|和\verb|mkindex|。
+    \t[v] 指出list来列出所有文件。
+\end{plttodoenv}
+\bigskip
+
+\subsection{版本历史}
+
+\hline
+
+0.4.6: 因为在上一版本中的支持，很轻松就实现了空命令：即，什么都他妈的不干。
+此外，实现了列引索命令\verb|list|和重构了\verb|sreach|。现在v0.3.0版本能干
+的，这个版本都能干，这个版本能的，那个版本大多数不能。这个小版本就差不多到
+此为止了。重构了解析和处理层，接下来就是df-idf的内容攻坚了。
+
+0.4.5: 通过回车来分割命令。原来在\verb|unicode.IsSpace|的眼中，回车和其他的
+空白符号都是一样的，原来如此，让我搞得好辛苦。
+
+0.4.4: 支持更好的\verb|quit|，与之前不同，\verb|quit|是一个命令而不需要预处理了。
+
+0.4.3: 支持一个没有什么用的命令：\verb|print|，还有，去你妈的默认选项。
+没有默认选项了现在。
+
+0.4.2: 全面更新了文档。使用\LaTeX{}而非\verb|Markdown|来编写文档。
+
+0.4.1: 重构，并让\verb|interactive|成为默认选项。
+
+0.4.0: 使用\verb|sub-command|。
+
+\hline
+
+0.3.0: 使用前置命令以支持更多的操作，目前支持命令\verb|sreach|。
+
+\hline
+
+0.2.4: 使用\verb|Peterlits/argparse|替代原作者的库，以获得更好的usage输
+出（不过如果原作者如果接受了我的pull request的话，那么其实可能又
+会换回来）。
+
+\hline
+
+before: 未记录。
+
+\end{document}
+
