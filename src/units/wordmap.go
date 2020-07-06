@@ -4,6 +4,8 @@ import (
     "fmt"
     "strings"
     "io/ioutil"
+
+    "../index"
 )
 
 func _getWordMap_raw(files []File) (wordmap *map[string]*DocList) {
@@ -17,7 +19,7 @@ func _getWordMap_raw(files []File) (wordmap *map[string]*DocList) {
             return
         }
         // split file
-        for _, word := range Split(string(file_byte)){
+        for _, word := range index.Split(string(file_byte)){
             _, ok := (*wordmap)[word]
             if ok {
                 // if word in the wordmap then just append it

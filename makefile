@@ -1,13 +1,19 @@
-viewer   = chrome.exe
+viewer     = chrome.exe
 
-SRC      = ./src/main.go
-UNITS    = ./src/units/version.go     ./src/units/split.go   ./src/units/file.go \
-		   ./src/units/list.go
-PARSE    = ./src/parse/parse.y        ./src/parse/parse.go
-ARGPARSE = ./src/argparse/argparse.go
-LOGIC    = ./src/logic/logic.go
+SRC_F      = ./src
+SRC        = $(SRC_F)/main.go
+UNITS_F    = $(SRC_F)/units
+UNITS      = $(UNITS_F)/version.go      $(UNITS_F)/file.go     $(UNITS_F)/list.go
+PARSE_F    = $(SRC_F)/parse
+PARSE      = $(PARSE_F)/parse.y         $(PARSE_F)/parse.go
+ARGPARSE_F = $(SRC_F)/argparse
+ARGPARSE   = $(ARGPARSE_F)/argparse.go
+LOGIC_F    = $(SRC_F)/logic
+LOGIC      = $(LOGIC_F)/main.go    		$(LOGIC_F)/sreach.go
+INDEX_F    = $(SRC_F)/index
+INDEX      = $(INDEX_F)/split.go
 
-DOC      = ./doc/README.tex
+DOC        = ./doc/README.tex
 
 main: $(SRC) $(UNITS) $(PARSE) $(ARGPARSE) $(LOGIC)
 	go build -o main ./src
@@ -38,3 +44,7 @@ clean:
 	-rm ./main
 	-rm ./index.dict
 	-rm ./src/parse.go
+
+.PHONY: test
+test:
+	go test $(INDEX_F)
